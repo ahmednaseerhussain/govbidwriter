@@ -88,7 +88,8 @@ function stripCodeFences(text: string): string {
  */
 export async function generateStructured<T>(
   req: AIRequest,
-  schema: z.ZodType<T>
+  // Input type is `any` so T is inferred from the schema OUTPUT (post-defaults).
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>
 ): Promise<T> {
   const provider = await getAIProvider();
 

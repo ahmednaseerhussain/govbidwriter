@@ -5,20 +5,20 @@
 - [x] Project scaffold (Next 15, TS, Tailwind, Prisma)
 - [x] `.claude/agents/` subagent team
 - [x] Prisma schema (User, CompanyProfile, RfpDocument, RfpAnalysis, RfpRequirement, Proposal, ProposalSection, GeneratedTool, Subscription, UsageLog, SavedOpportunity)
-- [ ] Auth (signup/login, signed session cookie, requireUser)
-- [ ] AI provider abstraction (Fable 5 + mock) with zod-validated JSON outputs
-- [ ] Company profile builder
-- [ ] Capability statement generator (dashboard + free public tool)
-- [ ] RFP upload (PDF + paste fallback) and analyzer
-- [ ] Requirement extraction + compliance matrix (+ CSV export)
-- [ ] Proposal generator + section editor (+ Markdown export)
-- [ ] Billing: plans, usage limits, Stripe stubs, mock upgrade flow
-- [ ] Free tools: capability statement, compliance matrix preview, NAICS finder
-- [ ] pSEO: /government-contracts, industry pages, industry/state pages, NAICS pages
-- [ ] /templates, /blog (3 seed posts), /government-contract-proposal-template
-- [ ] sitemap.ts, robots.ts, JSON-LD, metadata
-- [ ] README + .env.example + deploy guide
-- [ ] typecheck/lint/build green; smoke tests
+- [x] Auth (signup/login, signed session cookie, requireUser)
+- [x] AI provider abstraction (Fable 5 + mock) with zod-validated JSON outputs
+- [x] Company profile builder
+- [x] Capability statement generator (dashboard + free public tool)
+- [x] RFP upload (PDF + paste fallback) and analyzer
+- [x] Requirement extraction + compliance matrix (+ CSV export)
+- [x] Proposal generator + section editor (+ Markdown export)
+- [x] Billing: plans, usage limits, Stripe stubs, mock upgrade flow
+- [x] Free tools: capability statement, compliance matrix preview, NAICS finder
+- [x] pSEO: /government-contracts, industry pages, industry/state pages, NAICS pages
+- [x] /templates, /blog (3 seed posts), /government-contract-proposal-template
+- [x] sitemap.ts, robots.ts, JSON-LD, metadata
+- [x] README + .env.example + deploy guide
+- [x] typecheck/lint/build green; smoke tests (18 passing)
 
 ## Post-launch backlog (deliberately cut from MVP)
 
