@@ -1,0 +1,195 @@
+// GovBidWriter database schema.
+//
+// Portability rule: this schema must work on SQLite (local dev, zero setup)
+// and PostgreSQL (production). Therefore: no enums, no Json columns.
+// String-typed "JSON string" fields are validated with zod in src/lib.
+//
+// To deploy on Postgres: change provider to "postgresql", set DATABASE_URL,
+// then run `npx prisma migrate deploy` (see README).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  companyProfile     CompanyProfile?
+  rfpDocuments       RfpDocument[]
+  proposals          Proposal[]
+  generatedTools     GeneratedTool[]
+  subscription       Subscription?
+  usageLogs          UsageLog[]
+  savedOpportunities SavedOpportunity[]
+}
+
+model CompanyProfile {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyName     String
+  website         String?
+  ownerName       String?
+  email           String?
+  phone           String?
+  address         String?
+  uei             String?
+  cageCode        String?
+  naicsCodes      String? // JSON string array, e.g. ["541511","541512"]
+  certifications  String? // JSON string array, e.g. ["8(a)","WOSB"]
+  setAsides       String? // JSON string array of set-aside eligibility
+  services        String? // free text, one per line
+  differentiators String? // free text
+  pastPerformance String? // free text
+  teamBios        String? // free text
+  serviceAreas    String? // free text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model RfpDocument {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  fileName    String?
+  sourceType  String   @default("paste") // "pdf" | "paste"
+  textContent String // extracted RFP text
+  textLength  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  analysis     RfpAnalysis?
+  requirements RfpRequirement[]
+  proposals    Proposal[]
+
+  @@index([userId, createdAt])
+}
+
+model RfpAnalysis {
+  id                     String      @id @default(cuid())
+  rfpDocumentId          String      @unique
+  rfpDocument            RfpDocument @relation(fields: [rfpDocumentId], references: [id], onDelete: Cascade)
+  title                  String?
+  agency                 String?
+  solicitationNumber     String?
+  deadline               String?
+  naicsCodes             String? // JSON string array
+  setAside               String?
+  summary                String?
+  submissionInstructions String? // JSON string array
+  evaluationCriteria     String? // JSON string array
+  requiredDocuments      String? // JSON string array
+  risks                  String? // JSON string array
+  createdAt              DateTime    @default(now())
+}
+
+model RfpRequirement {
+  id               String      @id @default(cuid())
+  rfpDocumentId    String
+  rfpDocument      RfpDocument @relation(fields: [rfpDocumentId], references: [id], onDelete: Cascade)
+  reqId            String // human id like "R-001"
+  section          String?
+  pageReference    String?
+  requirementText  String
+  responseNeeded   String?
+  requiredDocument String?
+  priority         String      @default("medium") // "low" | "medium" | "high"
+  riskLevel        String      @default("low") // "low" | "medium" | "high"
+  status           String      @default("not_started") // "not_started" | "in_progress" | "complete"
+  sortOrder        Int         @default(0)
+  createdAt        DateTime    @default(now())
+
+  @@index([rfpDocumentId, sortOrder])
+}
+
+model Proposal {
+  id            String       @id @default(cuid())
+  userId        String
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rfpDocumentId String?
+  rfpDocument   RfpDocument? @relation(fields: [rfpDocumentId], references: [id], onDelete: SetNull)
+  title         String
+  status        String       @default("draft") // "draft" | "in_review" | "final"
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  sections ProposalSection[]
+
+  @@index([userId, createdAt])
+}
+
+model ProposalSection {
+  id         String   @id @default(cuid())
+  proposalId String
+  proposal   Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  sortOrder  Int      @default(0)
+  title      String
+  content    String   @default("")
+  updatedAt  DateTime @updatedAt
+  createdAt  DateTime @default(now())
+
+  @@index([proposalId, sortOrder])
+}
+
+model GeneratedTool {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  toolType  String // "capability_statement" | "compliance_matrix" | ...
+  input     String? // JSON string of the inputs used
+  output    String // generated content (markdown or JSON string)
+  createdAt DateTime @default(now())
+
+  @@index([userId, toolType, createdAt])
+}
+
+model Subscription {
+  id                   String    @id @default(cuid())
+  userId               String    @unique
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan                 String    @default("free") // "free" | "pro"
+  status               String    @default("active") // "active" | "canceled" | "past_due"
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  currentPeriodEnd     DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model UsageLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String // "ai_generation" | "rfp_upload" | "export"
+  meta      String? // free-form context, e.g. which feature
+  createdAt DateTime @default(now())
+
+  @@index([userId, action, createdAt])
+}
+
+model SavedOpportunity {
+  id                 String   @id @default(cuid())
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title              String
+  agency             String?
+  solicitationNumber String?
+  url                String?
+  deadline           String?
+  naicsCode          String?
+  notes              String?
+  createdAt          DateTime @default(now())
+
+  @@index([userId, createdAt])
+}

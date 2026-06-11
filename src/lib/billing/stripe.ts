@@ -1,0 +1,135 @@
+import "server-only";
+import Stripe from "stripe";
+import { db } from "@/lib/db";
+
+/**
+ * Stripe integration with full mock mode.
+ *
+ * - With STRIPE_SECRET_KEY: real Checkout sessions and webhook handling.
+ * - Without keys: "upgrading" flips the Subscription row locally so the whole
+ *   paid experience is testable end to end with zero Stripe setup.
+ */
+
+export function isStripeConfigured(): boolean {
+  return Boolean(
+    process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRO_PRICE_ID
+  );
+}
+
+function getStripe(): Stripe {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error("Stripe is not configured.");
+  return new Stripe(key);
+}
+
+export type CheckoutResult =
+  | { mode: "stripe"; url: string }
+  | { mode: "mock"; upgraded: true };
+
+/** Start an upgrade. Real Stripe Checkout if configured, instant mock upgrade otherwise. */
+export async function startProCheckout(
+  userId: string,
+  userEmail: string
+): Promise<CheckoutResult> {
+  if (!isStripeConfigured()) {
+    await setMockPlan(userId, "pro");
+    return { mode: "mock", upgraded: true };
+  }
+
+  const stripe = getStripe();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const session = await stripe.checkout.sessions.create({
+    mode: "subscription",
+    customer_email: userEmail,
+    client_reference_id: userId,
+    line_items: [{ price: process.env.STRIPE_PRO_PRICE_ID!, quantity: 1 }],
+    success_url: `${appUrl}/dashboard/billing?upgraded=1`,
+    cancel_url: `${appUrl}/dashboard/billing?canceled=1`,
+    metadata: { userId },
+  });
+  if (!session.url) throw new Error("Stripe did not return a checkout URL.");
+  return { mode: "stripe", url: session.url };
+}
+
+/** Cancel (downgrade). In mock mode, flips the local row. */
+export async function cancelProSubscription(userId: string): Promise<void> {
+  const sub = await db.subscription.findUnique({ where: { userId } });
+  if (isStripeConfigured() && sub?.stripeSubscriptionId) {
+    const stripe = getStripe();
+    await stripe.subscriptions.cancel(sub.stripeSubscriptionId);
+  }
+  await setMockPlan(userId, "free");
+}
+
+export async function setMockPlan(
+  userId: string,
+  plan: "free" | "pro"
+): Promise<void> {
+  await db.subscription.upsert({
+    where: { userId },
+    create: { userId, plan, status: "active" },
+    update: { plan, status: "active" },
+  });
+}
+
+/**
+ * Webhook fulfillment: called from /api/stripe/webhook with a verified event.
+ * Handles subscription activation and cancellation.
+ */
+export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+      const userId =
+        session.client_reference_id || session.metadata?.userId || null;
+      if (!userId) return;
+      await db.subscription.upsert({
+        where: { userId },
+        create: {
+          userId,
+          plan: "pro",
+          status: "active",
+          stripeCustomerId:
+            typeof session.customer === "string" ? session.customer : null,
+          stripeSubscriptionId:
+            typeof session.subscription === "string"
+              ? session.subscription
+              : null,
+        },
+        update: {
+          plan: "pro",
+          status: "active",
+          stripeCustomerId:
+            typeof session.customer === "string" ? session.customer : null,
+          stripeSubscriptionId:
+            typeof session.subscription === "string"
+              ? session.subscription
+              : null,
+        },
+      });
+      break;
+    }
+    case "customer.subscription.deleted": {
+      const sub = event.data.object as Stripe.Subscription;
+      const existing = await db.subscription.findFirst({
+        where: { stripeSubscriptionId: sub.id },
+      });
+      if (existing) {
+        await db.subscription.update({
+          where: { id: existing.id },
+          data: { plan: "free", status: "canceled" },
+        });
+      }
+      break;
+    }
+  }
+}
+
+export function constructWebhookEvent(
+  payload: string,
+  signature: string
+): Stripe.Event {
+  const secret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!secret) throw new Error("STRIPE_WEBHOOK_SECRET is not set.");
+  return getStripe().webhooks.constructEvent(payload, signature, secret);
+}
