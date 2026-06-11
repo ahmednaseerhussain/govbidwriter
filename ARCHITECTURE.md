@@ -9,12 +9,14 @@ RFP analysis, requirement extraction, compliance matrices, and proposal drafts.
 | --- | --- | --- |
 | Framework | Next.js 15 (App Router) + TypeScript | Server components by default, server actions for mutations |
 | Styling | Tailwind CSS + shadcn/ui-style components | `src/components/ui/` |
-| Database | Prisma ORM — SQLite (dev) / PostgreSQL (prod) | Portable schema: no enums, no Json columns |
-| AI | Provider abstraction — Fable 5 (Anthropic API) primary, mock fallback | `src/lib/ai/` |
+| Database | Prisma ORM — PostgreSQL (Neon) | Portable schema (no enums, no Json columns) — SQLite still works for local dev by switching the provider |
+| AI | Provider abstraction — DeepSeek (`deepseek-v4-flash`) primary, mock fallback | `src/lib/ai/` — OpenAI-compatible REST, JSON mode, usage/cost logging |
+| Email | Resend via REST with full mock mode | `src/lib/email/` — templates, preferences, sequences, EmailLog |
+| Notifications | In-app notification center | `src/lib/notifications.ts`, `/dashboard/notifications` |
 | Billing | Stripe with full mock mode | `src/lib/billing/` |
 | Auth | Credentials (scrypt) + HMAC-signed session cookie | `src/lib/auth/` — swappable for NextAuth later |
 | PDF | `pdf-parse` behind an abstraction, paste-text fallback | `src/lib/pdf/` |
-| Deploy | Vercel | No persistent disk: extracted text stored in DB, never files |
+| Deploy | Vercel | No persistent disk; hourly email cron via `vercel.json` |
 
 ## Directory layout
 
@@ -52,15 +54,16 @@ prisma/schema.prisma
 
 ## Key decisions
 
-1. **Mock-first external services.** Every external dependency (Fable 5, Stripe,
+1. **Mock-first external services.** Every external dependency (DeepSeek, Stripe,
    SAM.gov, Resend) checks its env key at runtime and degrades to a working mock.
-   `npm run dev` and `npm run build` succeed with zero env vars.
-2. **JSON-as-String columns.** SQLite (dev) and Postgres (prod) portability means
-   no Prisma enums/Json. Arrays are stored as JSON strings and validated with zod
+   `npm run dev` and `npm run build` succeed with only a DATABASE_URL.
+2. **JSON-as-String columns.** SQLite/Postgres portability means no Prisma
+   enums/Json. Arrays are stored as JSON strings and validated with zod
    helpers in `src/lib/json.ts`.
-3. **AI calls only via `AIProvider`.** `getAIProvider()` returns `FableProvider`
-   when `FABLE_API_KEY` is set, else `MockProvider`. Structured outputs are
-   validated against zod schemas with one repair retry.
+3. **AI calls only via `AIProvider`.** `getAIProvider()` returns `DeepSeekProvider`
+   when `DEEPSEEK_API_KEY` is set, else `MockProvider`. Structured outputs are
+   validated against zod schemas with one repair retry; every call logs token
+   usage + estimated cost (`src/lib/ai/usage.ts`).
 4. **Prompt injection defense.** RFP text is untrusted: wrapped in delimiters,
    the model is instructed to treat it as data, and output is schema-validated.
 5. **Usage gating server-side.** Plan limits in `src/lib/billing/plans.ts`,

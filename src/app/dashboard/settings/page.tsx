@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
 import { requireUser } from "@/lib/auth/session";
+import { db } from "@/lib/db";
 import { isMockMode } from "@/lib/ai/provider";
 import { isStripeConfigured } from "@/lib/billing/stripe";
+import { isEmailConfigured } from "@/lib/email/provider";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { SettingsForm } from "./settings-form";
+import { EmailPreferencesForm } from "./email-preferences-form";
 
 export const metadata: Metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
   const user = await requireUser();
+  const pref = await db.emailPreference.findUnique({
+    where: { userId: user.id },
+  });
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -19,6 +25,16 @@ export default async function SettingsPage() {
       </div>
 
       <SettingsForm defaultName={user.name ?? ""} email={user.email} />
+
+      <EmailPreferencesForm
+        defaults={{
+          productUpdates: pref?.productUpdates ?? true,
+          marketingEmails: pref?.marketingEmails ?? true,
+          deadlineReminders: pref?.deadlineReminders ?? true,
+          opportunityAlerts: pref?.opportunityAlerts ?? true,
+          usageAlerts: pref?.usageAlerts ?? true,
+        }}
+      />
 
       <Card>
         <CardHeader>
@@ -31,7 +47,7 @@ export default async function SettingsPage() {
         <CardContent>
           <ul className="space-y-3 text-sm">
             <li className="flex items-center justify-between">
-              <span>AI provider (Fable 5)</span>
+              <span>AI provider (DeepSeek)</span>
               <Badge variant={isMockMode() ? "warning" : "success"}>
                 {isMockMode() ? "Mock mode" : "Live"}
               </Badge>
@@ -40,6 +56,12 @@ export default async function SettingsPage() {
               <span>Stripe billing</span>
               <Badge variant={isStripeConfigured() ? "success" : "warning"}>
                 {isStripeConfigured() ? "Live" : "Mock mode"}
+              </Badge>
+            </li>
+            <li className="flex items-center justify-between">
+              <span>Email (Resend)</span>
+              <Badge variant={isEmailConfigured() ? "success" : "warning"}>
+                {isEmailConfigured() ? "Live" : "Mock mode"}
               </Badge>
             </li>
             <li className="flex items-center justify-between">

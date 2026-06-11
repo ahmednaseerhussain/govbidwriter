@@ -69,7 +69,7 @@ export default async function DashboardPage() {
 
       {isMockMode() && (
         <Alert variant="info">
-          <strong>Demo mode:</strong> FABLE_API_KEY is not set, so AI features
+          <strong>Demo mode:</strong> DEEPSEEK_API_KEY is not set, so AI features
           return realistic sample output. Add your key to .env to enable real
           generation.
         </Alert>

@@ -12,7 +12,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -31,6 +31,11 @@ model User {
   subscription       Subscription?
   usageLogs          UsageLog[]
   savedOpportunities SavedOpportunity[]
+  emailLogs           EmailLog[]
+  emailPreference     EmailPreference?
+  notifications       Notification[]
+  sequenceEnrollments EmailSequenceEnrollment[]
+  savedSearches       SavedSearch[]
 }
 
 model CompanyProfile {
@@ -91,6 +96,8 @@ model RfpAnalysis {
   evaluationCriteria     String? // JSON string array
   requiredDocuments      String? // JSON string array
   risks                  String? // JSON string array
+  deadlineAt             DateTime? // parsed from `deadline` when parseable (drives reminders)
+  reminderSentAt         DateTime? // deadline-reminder dedupe marker
   createdAt              DateTime    @default(now())
 }
 
@@ -176,6 +183,98 @@ model UsageLog {
   createdAt DateTime @default(now())
 
   @@index([userId, action, createdAt])
+}
+
+// ---- Email & notifications ----
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  toAddress String
+  subject   String
+  template  String // template key, e.g. "welcome", "rfp_analysis_complete"
+  status    String // "sent" | "mocked" | "failed" | "skipped_preference"
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, template, createdAt])
+}
+
+model EmailPreference {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productUpdates    Boolean  @default(true) // workflow result emails + nurture guides
+  marketingEmails   Boolean  @default(true) // upgrade nudges, announcements
+  deadlineReminders Boolean  @default(true)
+  opportunityAlerts Boolean  @default(true) // saved-search alerts
+  usageAlerts       Boolean  @default(true)
+  updatedAt         DateTime @updatedAt
+  createdAt         DateTime @default(now())
+}
+
+model EmailSequence {
+  id          String                    @id @default(cuid())
+  name        String                    @unique // e.g. "nurture"
+  steps       EmailSequenceStep[]
+  enrollments EmailSequenceEnrollment[]
+  createdAt   DateTime                  @default(now())
+}
+
+model EmailSequenceStep {
+  id         String        @id @default(cuid())
+  sequenceId String
+  sequence   EmailSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  stepOrder  Int
+  delayHours Int // hours after the previous step (or enrollment for step 0)
+  template   String // template key
+
+  @@unique([sequenceId, stepOrder])
+}
+
+model EmailSequenceEnrollment {
+  id          String        @id @default(cuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sequenceId  String
+  sequence    EmailSequence @relation(fields: [sequenceId], references: [id], onDelete: Cascade)
+  currentStep Int           @default(0) // next step to send
+  nextSendAt  DateTime?
+  completedAt DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@unique([userId, sequenceId])
+  @@index([nextSendAt])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // "welcome" | "rfp" | "proposal" | "usage" | "billing" | "deadline"
+  title     String
+  body      String?
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+model SavedSearch {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  keywords    String?
+  naicsCode   String?
+  state       String?
+  lastAlertAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
 }
 
 model SavedOpportunity {

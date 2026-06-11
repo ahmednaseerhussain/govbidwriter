@@ -1,8 +1,8 @@
-import "server-only";
+﻿import "server-only";
 import type { AIProvider, AIRequest } from "./provider";
 
 /**
- * Deterministic mock provider — active when FABLE_API_KEY is missing.
+ * Deterministic mock provider — active when DEEPSEEK_API_KEY is missing.
  * Produces realistic, schema-valid output for every workflow so the entire
  * app (including builds and demos) works with zero external keys.
  */
@@ -27,7 +27,7 @@ export class MockProvider implements AIProvider {
       case "proposal_review":
         return mockProposalReview();
       default:
-        return "This is mock AI output. Set FABLE_API_KEY in .env to enable real generation with Fable 5.";
+        return "This is mock AI output. Set DEEPSEEK_API_KEY in .env to enable real generation with DeepSeek.";
     }
   }
 }
@@ -68,7 +68,7 @@ function mockRfpAnalysis(ctx: Record<string, string>) {
     deadline: "2026-07-15 14:00 ET",
     naicsCodes: ["561720"],
     setAside: "Total Small Business Set-Aside",
-    summary: `The agency is seeking a contractor to provide ${title.toLowerCase()} including all labor, supervision, equipment, and supplies. The base period is 12 months with four 12-month option periods. Offers are evaluated on technical approach, past performance, and price. This is mock analysis output — set FABLE_API_KEY to analyze your actual RFP text.`,
+    summary: `The agency is seeking a contractor to provide ${title.toLowerCase()} including all labor, supervision, equipment, and supplies. The base period is 12 months with four 12-month option periods. Offers are evaluated on technical approach, past performance, and price. This is mock analysis output — set DEEPSEEK_API_KEY to analyze your actual RFP text.`,
     submissionInstructions: [
       "Submit proposals electronically via email to the Contracting Officer by the deadline.",
       "Volume I: Technical Proposal (not to exceed 20 pages).",
@@ -194,7 +194,7 @@ function mockProposalSection(ctx: Record<string, string>): string {
   const rfp = ctx.rfpTitle || "the solicitation";
   return `## ${section}
 
-${company} is pleased to respond to ${rfp}. This draft was produced in mock mode (set FABLE_API_KEY for tailored generation), but follows the structure evaluators expect for a ${section.toLowerCase()}.
+${company} is pleased to respond to ${rfp}. This draft was produced in mock mode (set DEEPSEEK_API_KEY for tailored generation), but follows the structure evaluators expect for a ${section.toLowerCase()}.
 
 ${company} brings directly relevant experience to this requirement. Our approach is built on three commitments: full compliance with every stated requirement, continuity of service from day one, and measurable quality backed by our internal quality control program.
 
@@ -218,5 +218,5 @@ function mockProposalReview(): string {
 4. **Risk:** The staffing plan should name a contingency source for cleared personnel.
 5. **Polish:** Normalize tense and remove first-person plural inconsistencies.
 
-Set FABLE_API_KEY for a review tailored to your actual draft.`;
+Set DEEPSEEK_API_KEY for a review tailored to your actual draft.`;
 }

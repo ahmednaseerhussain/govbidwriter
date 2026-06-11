@@ -7,6 +7,9 @@ import { db } from "@/lib/db";
 import { hashPassword, verifyPassword } from "@/lib/auth/password";
 import { setSessionCookie, clearSessionCookie } from "@/lib/auth/session";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { sendTemplateEmail } from "@/lib/email/send";
+import { enrollInNurture } from "@/lib/email/sequences";
+import { notify } from "@/lib/notifications";
 
 export type AuthFormState = { error?: string };
 
@@ -55,8 +58,29 @@ export async function signupAction(
       passwordHash: await hashPassword(parsed.data.password),
       name,
       subscription: { create: { plan: "free", status: "active" } },
+      emailPreference: { create: {} }, // defaults: everything opted in
     },
   });
+
+  // Onboarding side effects — none of these may block signup.
+  await Promise.all([
+    sendTemplateEmail({ userId: user.id, template: "welcome" }),
+    enrollInNurture(user.id),
+    notify({
+      userId: user.id,
+      type: "welcome",
+      title: "Welcome to GovBidWriter",
+      body: "Start by completing your company profile — every generation is grounded in it.",
+      link: "/dashboard/company-profile",
+    }),
+    process.env.ADMIN_EMAIL
+      ? sendTemplateEmail({
+          to: process.env.ADMIN_EMAIL,
+          template: "admin_new_signup",
+          payload: { email: user.email, name: name ?? "" },
+        })
+      : Promise.resolve(),
+  ]);
 
   await setSessionCookie(user.id);
   redirect("/dashboard");

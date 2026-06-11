@@ -13,6 +13,9 @@ import { rfpAnalysisPrompt, requirementExtractionPrompt } from "@/lib/ai/prompts
 import { rfpAnalysisSchema, requirementsListSchema } from "@/lib/ai/schemas";
 import { toJsonString } from "@/lib/json";
 import { PROPOSAL_SECTION_DEFS } from "@/lib/proposal-sections";
+import { parseDeadlineDate } from "@/lib/utils";
+import { sendTemplateEmail } from "@/lib/email/send";
+import { notify } from "@/lib/notifications";
 
 export type RfpFormState = { error?: string };
 
@@ -86,6 +89,24 @@ export async function createRfpAction(
   });
 
   await logUsage(user.id, "rfp_upload", sourceType);
+  await Promise.all([
+    sendTemplateEmail({
+      userId: user.id,
+      template: "rfp_uploaded",
+      payload: {
+        rfpTitle: rfp.title,
+        rfpId: rfp.id,
+        chars: textContent.length.toLocaleString(),
+      },
+    }),
+    notify({
+      userId: user.id,
+      type: "rfp",
+      title: `RFP added: ${rfp.title}`,
+      body: "Next: run the analysis, then extract the compliance matrix.",
+      link: `/dashboard/rfps/${rfp.id}`,
+    }),
+  ]);
   redirect(`/dashboard/rfps/${rfp.id}`);
 }
 
@@ -116,38 +137,47 @@ export async function analyzeRfpAction(
       rfpAnalysisSchema
     );
 
+    const analysisData = {
+      title: analysis.title || rfp.title,
+      agency: analysis.agency,
+      solicitationNumber: analysis.solicitationNumber,
+      deadline: analysis.deadline,
+      deadlineAt: parseDeadlineDate(analysis.deadline),
+      naicsCodes: toJsonString(analysis.naicsCodes),
+      setAside: analysis.setAside,
+      summary: analysis.summary,
+      submissionInstructions: toJsonString(analysis.submissionInstructions),
+      evaluationCriteria: toJsonString(analysis.evaluationCriteria),
+      requiredDocuments: toJsonString(analysis.requiredDocuments),
+      risks: toJsonString(analysis.risks),
+    };
+
     await db.rfpAnalysis.upsert({
       where: { rfpDocumentId: rfp.id },
-      create: {
-        rfpDocumentId: rfp.id,
-        title: analysis.title || rfp.title,
-        agency: analysis.agency,
-        solicitationNumber: analysis.solicitationNumber,
-        deadline: analysis.deadline,
-        naicsCodes: toJsonString(analysis.naicsCodes),
-        setAside: analysis.setAside,
-        summary: analysis.summary,
-        submissionInstructions: toJsonString(analysis.submissionInstructions),
-        evaluationCriteria: toJsonString(analysis.evaluationCriteria),
-        requiredDocuments: toJsonString(analysis.requiredDocuments),
-        risks: toJsonString(analysis.risks),
-      },
-      update: {
-        title: analysis.title || rfp.title,
-        agency: analysis.agency,
-        solicitationNumber: analysis.solicitationNumber,
-        deadline: analysis.deadline,
-        naicsCodes: toJsonString(analysis.naicsCodes),
-        setAside: analysis.setAside,
-        summary: analysis.summary,
-        submissionInstructions: toJsonString(analysis.submissionInstructions),
-        evaluationCriteria: toJsonString(analysis.evaluationCriteria),
-        requiredDocuments: toJsonString(analysis.requiredDocuments),
-        risks: toJsonString(analysis.risks),
-      },
+      create: { rfpDocumentId: rfp.id, ...analysisData },
+      // Re-analysis resets the reminder dedupe so a changed deadline re-alerts.
+      update: { ...analysisData, reminderSentAt: null },
     });
 
     await logUsage(user.id, "ai_generation", "rfp_analysis");
+    await Promise.all([
+      sendTemplateEmail({
+        userId: user.id,
+        template: "rfp_analysis_complete",
+        payload: {
+          rfpTitle: rfp.title,
+          rfpId: rfp.id,
+          deadline: analysis.deadline || "",
+        },
+      }),
+      notify({
+        userId: user.id,
+        type: "rfp",
+        title: `Analysis ready: ${rfp.title}`,
+        body: analysis.deadline ? `Deadline found: ${analysis.deadline}` : undefined,
+        link: `/dashboard/rfps/${rfp.id}`,
+      }),
+    ]);
     revalidatePath(`/dashboard/rfps/${rfp.id}`);
     return {};
   } catch (err) {
@@ -200,6 +230,24 @@ export async function extractRequirementsAction(
     ]);
 
     await logUsage(user.id, "ai_generation", "requirement_extraction");
+    await Promise.all([
+      sendTemplateEmail({
+        userId: user.id,
+        template: "compliance_matrix_ready",
+        payload: {
+          rfpTitle: rfp.title,
+          rfpId: rfp.id,
+          count: String(requirements.length),
+        },
+      }),
+      notify({
+        userId: user.id,
+        type: "rfp",
+        title: `Compliance matrix ready: ${requirements.length} requirements`,
+        body: `Extracted from ${rfp.title}. Verify against the official solicitation.`,
+        link: `/dashboard/rfps/${rfp.id}`,
+      }),
+    ]);
     revalidatePath(`/dashboard/rfps/${rfp.id}`);
     return {};
   } catch (err) {
@@ -255,6 +303,14 @@ export async function createProposalAction(
         })),
       },
     },
+  });
+
+  await notify({
+    userId: user.id,
+    type: "proposal",
+    title: `Proposal created: ${proposal.title}`,
+    body: "Generate each section from your company profile and the RFP analysis.",
+    link: `/dashboard/proposals/${proposal.id}`,
   });
 
   redirect(`/dashboard/proposals/${proposal.id}`);

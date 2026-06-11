@@ -9,6 +9,8 @@ import { getAIProvider, AIProviderError } from "@/lib/ai/provider";
 import { proposalSectionPrompt } from "@/lib/ai/prompts";
 import { parseStringArray } from "@/lib/json";
 import { PROPOSAL_SECTION_DEFS } from "@/lib/proposal-sections";
+import { sendTemplateEmail } from "@/lib/email/send";
+import { notify } from "@/lib/notifications";
 
 export type SectionState = { error?: string; saved?: boolean };
 
@@ -100,11 +102,36 @@ export async function generateSectionAction(
       })
     );
 
+    // Was this the first drafted section? (checked before the update lands)
+    const previouslyDrafted = await db.proposalSection.count({
+      where: { proposalId: section.proposalId, NOT: { content: "" } },
+    });
+
     await db.proposalSection.update({
       where: { id: section.id },
       data: { content },
     });
     await logUsage(user.id, "ai_generation", `proposal_section:${section.title}`);
+
+    if (previouslyDrafted === 0) {
+      await Promise.all([
+        sendTemplateEmail({
+          userId: user.id,
+          template: "proposal_draft_ready",
+          payload: {
+            proposalTitle: section.proposal.title,
+            proposalId: section.proposalId,
+          },
+        }),
+        notify({
+          userId: user.id,
+          type: "proposal",
+          title: `First section drafted: ${section.proposal.title}`,
+          body: `"${section.title}" is ready to review and edit.`,
+          link: `/dashboard/proposals/${section.proposalId}`,
+        }),
+      ]);
+    }
 
     revalidatePath(`/dashboard/proposals/${section.proposalId}`);
     return { saved: true };

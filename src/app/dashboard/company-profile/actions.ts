@@ -11,6 +11,8 @@ import { capabilityStatementPrompt } from "@/lib/ai/prompts";
 import { capabilityStatementSchema, type CapabilityStatement } from "@/lib/ai/schemas";
 import { capabilityStatementToMarkdown } from "@/lib/export";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
+import { sendTemplateEmail } from "@/lib/email/send";
+import { notify } from "@/lib/notifications";
 
 const profileSchema = z.object({
   companyName: z.string().trim().min(1, "Company name is required.").max(200),
@@ -147,6 +149,18 @@ export async function generateCapabilityStatementAction(
           input: JSON.stringify({ targetIndustry, targetAgency }),
           output: markdown,
         },
+      }),
+      sendTemplateEmail({
+        userId: user.id,
+        template: "capability_statement_ready",
+        payload: { targetIndustry },
+      }),
+      notify({
+        userId: user.id,
+        type: "proposal",
+        title: "Capability statement generated",
+        body: targetIndustry ? `Tailored for ${targetIndustry}.` : undefined,
+        link: "/dashboard/company-profile",
       }),
     ]);
 

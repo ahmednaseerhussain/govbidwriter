@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { FileCheck2, LogOut } from "lucide-react";
+import { Bell, FileCheck2, LogOut } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { logoutAction } from "@/lib/auth/actions";
+import { getUnreadCount } from "@/lib/notifications";
 import { DashboardNav } from "@/components/dashboard/nav";
 import { Button } from "@/components/ui/button";
 import { DISCLAIMER } from "@/lib/utils";
@@ -14,6 +15,7 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const user = await requireUser();
+  const unreadCount = await getUnreadCount(user.id);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -27,6 +29,18 @@ export default async function DashboardLayout({
             GovBidWriter
           </Link>
           <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/notifications"
+              className="relative inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </Link>
             <span className="hidden text-sm text-muted-foreground sm:inline">
               {user.email}
             </span>

@@ -20,12 +20,23 @@
 - [x] README + .env.example + deploy guide
 - [x] typecheck/lint/build green; smoke tests (18 passing)
 
+## Phase 2 (this build)
+
+- [x] AI provider switched to DeepSeek (`deepseek-v4-flash`) with mock fallback + usage/cost logging
+- [x] Database on PostgreSQL (Neon) with migrations
+- [x] Email system: Resend provider + mock, 14 templates, EmailLog, per-category preferences,
+      signed unsubscribe links, nurture sequence (DB-seeded), cron route, Vercel cron config
+- [x] Email triggers: signup, capability statement, RFP upload/analysis/matrix, first proposal
+      section, usage warnings (80%/100%), subscription upgrade/cancel (mock + Stripe webhook),
+      deadline reminders (3-day window), admin signup notice
+- [x] In-app notification center with unread badge + mark-all-read + preferences UI
+
 ## Post-launch backlog (deliberately cut from MVP)
 
 - DOCX export (currently Markdown + CSV; `docx` npm package is the candidate)
-- Real Stripe checkout + webhook fulfillment (stubs in place)
-- SAM.gov live opportunity search (SavedOpportunity model ready; needs SAM_GOV_API_KEY integration)
-- Email (Resend): welcome, deadline reminders
+- Real Stripe checkout + webhook fulfillment end-to-end test (code paths in place)
+- SAM.gov live opportunity search (SavedSearch/SavedOpportunity models + alert email template ready; needs SAM_GOV_API_KEY integration + UI)
+- Contact form page (admin email template pattern is in place)
 - Password reset flow
 - Team seats / multi-user orgs
 - Proposal review/score feature (prompt template exists; UI deferred)

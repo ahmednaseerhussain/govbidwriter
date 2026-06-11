@@ -21,3 +21,31 @@ export async function updateAccountAction(
   revalidatePath("/dashboard/settings");
   return { saved: true };
 }
+
+const PREF_KEYS = [
+  "productUpdates",
+  "marketingEmails",
+  "deadlineReminders",
+  "opportunityAlerts",
+  "usageAlerts",
+] as const;
+
+export async function updateEmailPreferencesAction(
+  _prev: SettingsState,
+  formData: FormData
+): Promise<SettingsState> {
+  const user = await requireUser();
+
+  const data = Object.fromEntries(
+    PREF_KEYS.map((key) => [key, formData.get(key) === "on"])
+  );
+
+  await db.emailPreference.upsert({
+    where: { userId: user.id },
+    create: { userId: user.id, ...data },
+    update: data,
+  });
+
+  revalidatePath("/dashboard/settings");
+  return { saved: true };
+}

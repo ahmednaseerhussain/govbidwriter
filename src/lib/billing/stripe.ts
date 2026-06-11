@@ -1,6 +1,8 @@
 import "server-only";
 import Stripe from "stripe";
 import { db } from "@/lib/db";
+import { sendTemplateEmail } from "@/lib/email/send";
+import { notify } from "@/lib/notifications";
 
 /**
  * Stripe integration with full mock mode.
@@ -107,6 +109,16 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
               : null,
         },
       });
+      await Promise.all([
+        sendTemplateEmail({ userId, template: "subscription_upgraded" }),
+        notify({
+          userId,
+          type: "billing",
+          title: "You're on Pro",
+          body: "Full matrices, all proposal sections, and exports are unlocked.",
+          link: "/dashboard/billing",
+        }),
+      ]);
       break;
     }
     case "customer.subscription.deleted": {
@@ -119,6 +131,19 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
           where: { id: existing.id },
           data: { plan: "free", status: "canceled" },
         });
+        await Promise.all([
+          sendTemplateEmail({
+            userId: existing.userId,
+            template: "subscription_canceled",
+          }),
+          notify({
+            userId: existing.userId,
+            type: "billing",
+            title: "Subscription canceled",
+            body: "You're back on the Free plan. All your work remains saved.",
+            link: "/dashboard/billing",
+          }),
+        ]);
       }
       break;
     }

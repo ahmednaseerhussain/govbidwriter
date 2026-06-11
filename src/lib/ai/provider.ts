@@ -4,10 +4,10 @@ import type { z } from "zod";
 /**
  * AI provider abstraction.
  *
- * All AI features call this interface — never an SDK directly. The primary
- * provider is Fable 5 (Anthropic API, enabled when FABLE_API_KEY is set);
- * without a key, a deterministic mock keeps every feature working.
- * Swapping providers later means implementing AIProvider once.
+ * All AI features call this interface — never an SDK/API directly. The sole
+ * runtime provider is DeepSeek (model deepseek-v4-flash, enabled when
+ * DEEPSEEK_API_KEY is set); without a key, a deterministic mock keeps every
+ * feature working. Swapping providers later means implementing AIProvider once.
  */
 
 export type AIRequest = {
@@ -51,9 +51,9 @@ let cachedProvider: AIProvider | null = null;
 
 export async function getAIProvider(): Promise<AIProvider> {
   if (cachedProvider) return cachedProvider;
-  if (process.env.FABLE_API_KEY) {
-    const { FableProvider } = await import("./fable");
-    cachedProvider = new FableProvider();
+  if (process.env.DEEPSEEK_API_KEY) {
+    const { DeepSeekProvider } = await import("./deepseek");
+    cachedProvider = new DeepSeekProvider();
   } else {
     const { MockProvider } = await import("./mock");
     cachedProvider = new MockProvider();
@@ -62,7 +62,7 @@ export async function getAIProvider(): Promise<AIProvider> {
 }
 
 export function isMockMode(): boolean {
-  return !process.env.FABLE_API_KEY;
+  return !process.env.DEEPSEEK_API_KEY;
 }
 
 function stripCodeFences(text: string): string {
