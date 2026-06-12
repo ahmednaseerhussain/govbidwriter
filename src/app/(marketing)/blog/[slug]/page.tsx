@@ -64,6 +64,8 @@ export default async function BlogPostPage({
           {post.title}
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
+          <span className="font-medium text-accent">{post.category}</span>
+          {" · "}
           {formatDate(post.date)} · {post.readingMinutes} min read
         </p>
 

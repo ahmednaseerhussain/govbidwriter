@@ -44,9 +44,26 @@ export function ContactForm() {
               <Input id="email" name="email" type="email" required autoComplete="email" />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="topic">Subject</Label>
-            <Input id="topic" name="topic" placeholder="e.g. Question about the Pro plan" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="company">Company (optional)</Label>
+              <Input id="company" name="company" autoComplete="organization" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="topic">Reason</Label>
+              <select
+                id="topic"
+                name="topic"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                defaultValue="Sales question"
+              >
+                <option>Sales question</option>
+                <option>Support</option>
+                <option>Billing</option>
+                <option>Feature request</option>
+                <option>Other</option>
+              </select>
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="message">Message *</Label>

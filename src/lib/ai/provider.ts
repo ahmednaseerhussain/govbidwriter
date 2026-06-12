@@ -23,6 +23,8 @@ export type AIRequest = {
     | "proposal_outline"
     | "proposal_section"
     | "proposal_review"
+    | "past_performance"
+    | "executive_summary"
     | "generic";
   /** Optional structured context for the mock provider (e.g. company name). */
   context?: Record<string, string>;

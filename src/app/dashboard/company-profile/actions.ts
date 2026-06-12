@@ -12,6 +12,7 @@ import { capabilityStatementSchema, type CapabilityStatement } from "@/lib/ai/sc
 import { capabilityStatementToMarkdown } from "@/lib/export";
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { sendTemplateEmail } from "@/lib/email/send";
+import { track } from "@/lib/analytics";
 import { notify } from "@/lib/notifications";
 
 const profileSchema = z.object({
@@ -78,6 +79,7 @@ export async function saveCompanyProfileAction(
     update: data,
   });
 
+  track("profile_saved", { hasServices: Boolean(d.services) }, user.id);
   revalidatePath("/dashboard/company-profile");
   return { saved: true };
 }
@@ -140,6 +142,7 @@ export async function generateCapabilityStatementAction(
 
     const markdown = capabilityStatementToMarkdown(result, profile.companyName);
 
+    track("capability_statement_generated", { targetIndustry }, user.id);
     await Promise.all([
       logUsage(user.id, "ai_generation", "capability_statement"),
       db.generatedTool.create({

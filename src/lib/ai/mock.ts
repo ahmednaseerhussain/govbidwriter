@@ -26,6 +26,10 @@ export class MockProvider implements AIProvider {
         return mockProposalSection(ctx);
       case "proposal_review":
         return mockProposalReview();
+      case "past_performance":
+        return mockPastPerformance(ctx);
+      case "executive_summary":
+        return mockExecutiveSummary(ctx);
       default:
         return "This is mock AI output. Set DEEPSEEK_API_KEY in .env to enable real generation with DeepSeek.";
     }
@@ -219,4 +223,46 @@ function mockProposalReview(): string {
 5. **Polish:** Normalize tense and remove first-person plural inconsistencies.
 
 Set DEEPSEEK_API_KEY for a review tailored to your actual draft.`;
+}
+
+function mockPastPerformance(ctx: Record<string, string>): string {
+  const project = ctx.projectName || "Commercial Services Contract";
+  const scope = ctx.scope || "facility support services";
+  const outcome = ctx.outcome || "delivered on schedule with zero quality deficiencies";
+  return `## Full Write-Up
+
+Under the ${project} engagement, our team performed ${scope.slice(0, 160)}. The scope and operating environment closely mirror the target requirement, including comparable service frequencies, reporting obligations, and quality standards. We staffed the effort with a dedicated on-site lead, executed against a documented quality control plan, and maintained proactive communication with the client's designated representative throughout the period of performance. The result: ${outcome.slice(0, 200)}. [INSERT: one quantified metric, e.g., inspection pass rate or on-time percentage] This record demonstrates our ability to deliver the same outcomes at comparable scale for the soliciting agency.
+
+## Short Version
+
+${project}: performed ${scope.slice(0, 100)} with ${outcome.slice(0, 100)}. Directly relevant scope, staffing model, and quality standards.
+
+## Reference Format
+
+- **Project:** ${project}
+- **Client:** [INSERT: client organization]
+- **Period:** ${ctx.dates || "[INSERT: period of performance]"}
+- **Value:** ${ctx.contractValue || "[INSERT: contract value]"}
+- **Scope:** ${scope.slice(0, 120)}
+- **Outcome:** ${outcome.slice(0, 120)}
+- **Reference:** [INSERT: name, title, phone, email]
+
+*Mock output — set DEEPSEEK_API_KEY for AI generation tailored to your project.*`;
+}
+
+function mockExecutiveSummary(ctx: Record<string, string>): string {
+  const company = ctx.companyName || "[INSERT: company name]";
+  const agency = ctx.agency || "the agency";
+  const need = ctx.rfpSummary || "the services described in the solicitation";
+  return `## Executive Summary
+
+${agency.charAt(0).toUpperCase() + agency.slice(1)} requires ${need.slice(0, 220)}. Success on this contract depends on uninterrupted service delivery, verifiable quality control, and a contractor who understands the operating environment from day one.
+
+${company} offers exactly that. Our approach pairs an experienced delivery team with a documented quality control plan aligned to the government's surveillance standards, a phase-in plan that reaches full performance without disruption, and direct leadership accountability for contract outcomes.
+
+Three discriminators set our proposal apart: (1) directly relevant past performance — [INSERT: contract reference with metric]; (2) a staffing model with named key personnel and a documented contingency pipeline; and (3) responsive small-business service, with company leadership personally engaged in contract performance.
+
+We are confident in our ability to meet every requirement of this solicitation and to deliver measurable value to ${agency} from the first day of performance.
+
+*This is an AI-assisted draft — verify all statements against the official solicitation before submission. (Mock output: set DEEPSEEK_API_KEY for generation tailored to your inputs.)*`;
 }

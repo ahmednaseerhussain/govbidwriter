@@ -19,9 +19,11 @@ export function MarketingFooter() {
           </div>
           <ul className="mt-3 space-y-2 text-sm">
             <li><Link className="hover:underline" href="/pricing">Pricing</Link></li>
-            <li><Link className="hover:underline" href="/tools/capability-statement-generator">Capability Statement Generator</Link></li>
+            <li><Link className="hover:underline" href="/tools">All Free Tools</Link></li>
             <li><Link className="hover:underline" href="/tools/rfp-compliance-matrix-generator">Compliance Matrix Generator</Link></li>
+            <li><Link className="hover:underline" href="/tools/capability-statement-generator">Capability Statement Generator</Link></li>
             <li><Link className="hover:underline" href="/tools/naics-code-finder">NAICS Code Finder</Link></li>
+            <li><Link className="hover:underline" href="/tools/bid-no-bid-calculator">Bid/No-Bid Calculator</Link></li>
           </ul>
         </div>
         <div>

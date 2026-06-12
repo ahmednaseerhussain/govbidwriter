@@ -5,6 +5,7 @@ import { getUserPlan, logUsage } from "@/lib/usage";
 import { proposalToMarkdown } from "@/lib/export";
 import { slugify } from "@/lib/utils";
 import { sendTemplateEmail, wasEmailSentSince } from "@/lib/email/send";
+import { track } from "@/lib/analytics";
 
 export async function GET(
   _request: Request,
@@ -33,6 +34,7 @@ export async function GET(
     proposal.sections.map((s) => ({ title: s.title, content: s.content }))
   );
   await logUsage(user.id, "export", "proposal_markdown");
+  track("export_downloaded", { type: "proposal_markdown" }, user.id);
 
   // Confirmation email at most once per day (exports are repeated often).
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);

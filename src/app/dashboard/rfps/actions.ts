@@ -16,6 +16,7 @@ import { PROPOSAL_SECTION_DEFS } from "@/lib/proposal-sections";
 import { parseDeadlineDate } from "@/lib/utils";
 import { sendTemplateEmail } from "@/lib/email/send";
 import { notify } from "@/lib/notifications";
+import { track } from "@/lib/analytics";
 
 export type RfpFormState = { error?: string };
 
@@ -89,6 +90,7 @@ export async function createRfpAction(
   });
 
   await logUsage(user.id, "rfp_upload", sourceType);
+  track("rfp_created", { sourceType, chars: textContent.length }, user.id);
   await Promise.all([
     sendTemplateEmail({
       userId: user.id,
@@ -160,6 +162,7 @@ export async function analyzeRfpAction(
     });
 
     await logUsage(user.id, "ai_generation", "rfp_analysis");
+    track("rfp_analyzed", { hasDeadline: Boolean(analysis.deadline) }, user.id);
     await Promise.all([
       sendTemplateEmail({
         userId: user.id,
@@ -230,6 +233,7 @@ export async function extractRequirementsAction(
     ]);
 
     await logUsage(user.id, "ai_generation", "requirement_extraction");
+    track("requirements_extracted", { count: requirements.length }, user.id);
     await Promise.all([
       sendTemplateEmail({
         userId: user.id,
@@ -305,6 +309,7 @@ export async function createProposalAction(
     },
   });
 
+  track("proposal_created", undefined, user.id);
   await notify({
     userId: user.id,
     type: "proposal",

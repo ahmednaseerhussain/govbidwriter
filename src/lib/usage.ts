@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getPlan, type Plan } from "@/lib/billing/plans";
 import { sendTemplateEmail, wasEmailSentSince } from "@/lib/email/send";
 import { notify } from "@/lib/notifications";
+import { track } from "@/lib/analytics";
 
 export type UsageAction = "ai_generation" | "rfp_upload" | "export";
 
@@ -96,6 +97,7 @@ async function maybeSendUsageAlert(userId: string): Promise<void> {
 
   if (used >= limit) {
     if (await wasEmailSentSince(userId, "usage_limit_reached", monthStart)) return;
+    track("free_limit_reached", { plan: plan.name, limit }, userId);
     await sendTemplateEmail({
       userId,
       template: "usage_limit_reached",

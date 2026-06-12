@@ -5,6 +5,7 @@ import { getUserPlan, logUsage } from "@/lib/usage";
 import { requirementsToCsv } from "@/lib/export";
 import { slugify } from "@/lib/utils";
 import { sendTemplateEmail, wasEmailSentSince } from "@/lib/email/send";
+import { track } from "@/lib/analytics";
 
 export async function GET(
   _request: Request,
@@ -30,6 +31,7 @@ export async function GET(
 
   const csv = requirementsToCsv(rfp.requirements);
   await logUsage(user.id, "export", "matrix_csv");
+  track("export_downloaded", { type: "matrix_csv" }, user.id);
 
   // Confirmation email at most once per day (exports are repeated often).
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);

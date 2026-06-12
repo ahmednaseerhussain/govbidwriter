@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { APP_URL } from "@/lib/utils";
+import { PHProvider } from "@/components/posthog-provider";
+import { PostHogPageView } from "@/components/posthog-pageview";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
@@ -17,7 +20,14 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen font-sans">{children}</body>
+      <body className="min-h-screen font-sans">
+        <PHProvider>
+          <Suspense fallback={null}>
+            <PostHogPageView />
+          </Suspense>
+          {children}
+        </PHProvider>
+      </body>
     </html>
   );
 }

@@ -1,12 +1,13 @@
 import Link from "next/link";
-import { FileText, ListChecks, BadgeCheck, ArrowRight } from "lucide-react";
+import { FileText, ListChecks, ArrowRight } from "lucide-react";
 import { buildMetadata, JsonLd, breadcrumbJsonLd } from "@/lib/seo/meta";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TEMPLATES } from "@/lib/seo/templates";
 
 export const metadata = buildMetadata({
   title: "Free Government Contracting Templates",
   description:
-    "Free templates for government contractors: 11-section proposal template, compliance matrix structure, and capability statement format — with guidance for each.",
+    "Free templates for government contractors: proposal templates by industry (janitorial, security, IT, construction), past performance, quality control plan, staffing plan, capability statement, and compliance matrix.",
   path: "/templates",
 });
 
@@ -27,14 +28,13 @@ const templates = [
       "The nine-column matrix proposal teams use to track every requirement: ID, section, page, requirement, response needed, document, priority, risk, status. Generate one from your RFP text instantly.",
     cta: "Generate from your RFP",
   },
-  {
-    href: "/tools/capability-statement-generator",
-    icon: BadgeCheck,
-    title: "Capability Statement",
-    description:
-      "The one-page format contracting officers expect: overview, core competencies, differentiators, past performance, and company data block. Generate yours from a short form.",
-    cta: "Generate yours",
-  },
+  ...TEMPLATES.map((t) => ({
+    href: `/templates/${t.slug}`,
+    icon: FileText,
+    title: t.name,
+    description: t.metaDescription.replace(/^Free /, "").replace(/^\w/, (c) => c.toUpperCase()),
+    cta: "View the template",
+  })),
 ];
 
 export default function TemplatesPage() {
@@ -51,9 +51,10 @@ export default function TemplatesPage() {
           Government Contracting Templates
         </h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">
-          The three documents every government contractor needs, structured the
-          way agencies expect them. Each template explains what goes where and
-          why — and GovBidWriter can fill them in for you.
+          The documents government contractors need, structured the way
+          agencies expect them — proposal templates by industry, plus the
+          plans and statements solicitations demand. Each one explains what
+          goes where and why, and GovBidWriter can fill them in for you.
         </p>
 
         <div className="mt-10 space-y-6">

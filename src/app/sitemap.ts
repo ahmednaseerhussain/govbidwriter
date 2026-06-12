@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { APP_URL } from "@/lib/utils";
 import { INDUSTRIES, STATES, NAICS_DETAIL } from "@/lib/seo/data";
 import { BLOG_POSTS } from "@/lib/seo/blog";
+import { FREE_TOOLS } from "@/lib/seo/tools";
+import { TEMPLATES } from "@/lib/seo/templates";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -12,15 +14,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/templates",
     "/government-contract-proposal-template",
     "/blog",
+    "/contact",
     "/government-contracts",
-    "/tools/capability-statement-generator",
-    "/tools/rfp-compliance-matrix-generator",
-    "/tools/naics-code-finder",
+    "/tools",
+    ...FREE_TOOLS.map((t) => `/tools/${t.slug}`),
   ].map((path) => ({
     url: `${APP_URL}${path}`,
     lastModified: now,
     changeFrequency: "weekly" as const,
     priority: path === "" ? 1 : 0.8,
+  }));
+
+  const templatePages = TEMPLATES.map((t) => ({
+    url: `${APP_URL}/templates/${t.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
   }));
 
   const industryPages = INDUSTRIES.map((industry) => ({
@@ -62,6 +71,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     ...staticPages,
+    ...templatePages,
     ...industryPages,
     ...stateHubPages,
     ...industryStatePages,

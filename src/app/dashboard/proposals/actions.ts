@@ -11,6 +11,7 @@ import { parseStringArray } from "@/lib/json";
 import { PROPOSAL_SECTION_DEFS } from "@/lib/proposal-sections";
 import { sendTemplateEmail } from "@/lib/email/send";
 import { notify } from "@/lib/notifications";
+import { track } from "@/lib/analytics";
 
 export type SectionState = { error?: string; saved?: boolean };
 
@@ -112,6 +113,7 @@ export async function generateSectionAction(
       data: { content },
     });
     await logUsage(user.id, "ai_generation", `proposal_section:${section.title}`);
+    track("proposal_section_generated", { section: section.title }, user.id);
 
     if (previouslyDrafted === 0) {
       await Promise.all([

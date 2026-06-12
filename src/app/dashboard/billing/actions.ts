@@ -6,6 +6,7 @@ import { requireUser } from "@/lib/auth/session";
 import { startProCheckout, cancelProSubscription } from "@/lib/billing/stripe";
 import { sendTemplateEmail } from "@/lib/email/send";
 import { notify } from "@/lib/notifications";
+import { track } from "@/lib/analytics";
 
 export type BillingState = { error?: string; success?: string };
 
@@ -14,12 +15,18 @@ export async function upgradeAction(
   _formData: FormData
 ): Promise<BillingState> {
   const user = await requireUser();
+  track("upgrade_clicked", undefined, user.id);
 
   let checkoutUrl: string | null = null;
   try {
     const result = await startProCheckout(user.id, user.email);
     if (result.mode === "stripe") {
       checkoutUrl = result.url;
+    } else if (result.mode === "setup") {
+      return {
+        error:
+          "Billing is in setup mode — paid checkout isn't enabled yet. Your work is saved; please check back soon or reach us via the contact page.",
+      };
     }
   } catch (err) {
     return {
@@ -28,7 +35,10 @@ export async function upgradeAction(
     };
   }
 
-  if (checkoutUrl) redirect(checkoutUrl);
+  if (checkoutUrl) {
+    track("checkout_started", undefined, user.id);
+    redirect(checkoutUrl);
+  }
 
   // Mock-mode upgrade completed locally — confirm like the real flow would.
   await Promise.all([

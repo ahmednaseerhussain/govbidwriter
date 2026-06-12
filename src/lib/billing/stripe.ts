@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { db } from "@/lib/db";
 import { sendTemplateEmail } from "@/lib/email/send";
 import { notify } from "@/lib/notifications";
+import { track } from "@/lib/analytics";
 
 /**
  * Stripe integration with full mock mode.
@@ -18,6 +19,20 @@ export function isStripeConfigured(): boolean {
   );
 }
 
+/**
+ * Mock upgrades (instant local plan flip, no charge) are allowed outside
+ * production by default, and in production only when ALLOW_MOCK_BILLING=true
+ * is set explicitly. A deployed site without Stripe keys otherwise shows
+ * "billing is in setup mode" instead of handing out free Pro.
+ */
+export function isMockBillingAllowed(): boolean {
+  if (isStripeConfigured()) return false;
+  return (
+    process.env.ALLOW_MOCK_BILLING === "true" ||
+    process.env.NODE_ENV !== "production"
+  );
+}
+
 function getStripe(): Stripe {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) throw new Error("Stripe is not configured.");
@@ -26,7 +41,8 @@ function getStripe(): Stripe {
 
 export type CheckoutResult =
   | { mode: "stripe"; url: string }
-  | { mode: "mock"; upgraded: true };
+  | { mode: "mock"; upgraded: true }
+  | { mode: "setup" };
 
 /** Start an upgrade. Real Stripe Checkout if configured, instant mock upgrade otherwise. */
 export async function startProCheckout(
@@ -34,6 +50,7 @@ export async function startProCheckout(
   userEmail: string
 ): Promise<CheckoutResult> {
   if (!isStripeConfigured()) {
+    if (!isMockBillingAllowed()) return { mode: "setup" };
     await setMockPlan(userId, "pro");
     return { mode: "mock", upgraded: true };
   }
@@ -109,6 +126,7 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
               : null,
         },
       });
+      track("subscription_activated", undefined, userId);
       await Promise.all([
         sendTemplateEmail({ userId, template: "subscription_upgraded" }),
         notify({

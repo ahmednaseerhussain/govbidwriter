@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { db } from "@/lib/db";
 import { APP_URL } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 import { sendRawEmail } from "./provider";
 import {
   renderTemplate,
@@ -126,6 +127,7 @@ export async function sendTemplateEmail(args: SendEmailArgs): Promise<void> {
         error: result.error ?? null,
       },
     });
+    track("email_sent", { template: args.template, status: result.status }, args.userId);
   } catch (err) {
     console.error("sendTemplateEmail failed:", err);
   }

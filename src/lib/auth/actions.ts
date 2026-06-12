@@ -10,6 +10,7 @@ import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit";
 import { sendTemplateEmail } from "@/lib/email/send";
 import { enrollInNurture } from "@/lib/email/sequences";
 import { notify } from "@/lib/notifications";
+import { track } from "@/lib/analytics";
 
 export type AuthFormState = { error?: string };
 
@@ -82,6 +83,7 @@ export async function signupAction(
       : Promise.resolve(),
   ]);
 
+  track("signup_completed", { hasName: Boolean(name) }, user.id);
   await setSessionCookie(user.id);
   redirect("/dashboard");
 }
@@ -110,6 +112,7 @@ export async function loginAction(
     return { error: "Invalid email or password." };
   }
 
+  track("login_completed", undefined, user.id);
   await setSessionCookie(user.id);
   redirect("/dashboard");
 }

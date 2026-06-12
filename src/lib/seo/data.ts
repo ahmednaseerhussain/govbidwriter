@@ -633,6 +633,126 @@ export const NAICS_DETAIL: NaicsEntry[] = [
     ],
   },
   {
+    code: "541519",
+    title: "Other Computer Related Services",
+    industrySlug: "it-services",
+    sizeStandard: "$34 million average annual receipts (150-employee exception for IT Value Added Resellers)",
+    description:
+      "The catch-all code for computer services that aren't custom programming (541511) or systems design (541512) — computer disaster recovery, software installation services, and IT support that doesn't fit the larger codes. Also home to the ITVAR exception used for hardware-plus-services buys.",
+    whatQualifies: [
+      "Computer disaster recovery and backup services",
+      "Software installation and configuration services",
+      "IT equipment-plus-integration sales under the ITVAR exception",
+      "Miscellaneous computer support not covered by 541511/541512",
+    ],
+    faqs: [
+      {
+        q: "When do agencies solicit under 541519 instead of 541512?",
+        a: "Most commonly for IT Value Added Reseller (ITVAR) buys — hardware or software purchases bundled with installation and support — which use a 150-employee size standard instead of receipts. Pure services work usually goes out under 541511 or 541512.",
+      },
+      {
+        q: "Should I add 541519 to my SAM profile?",
+        a: "If you do any IT services work, yes — listing 541511, 541512, and 541519 together costs nothing and ensures you appear in market research for the full IT opportunity stream. The solicitation's chosen code controls the size standard for each bid.",
+      },
+    ],
+  },
+  {
+    code: "484110",
+    title: "General Freight Trucking, Local",
+    industrySlug: "trucking",
+    sizeStandard: "$34 million average annual receipts",
+    description:
+      "Covers local (generally same metropolitan area) trucking of general freight: palletized goods, supplies, and equipment moved within a region. The primary code for local government hauling, base deliveries, and disaster-response freight staged near the event.",
+    whatQualifies: [
+      "Local delivery and hauling contracts for agencies and installations",
+      "Warehouse-to-site freight movement within a metro area",
+      "Disaster response freight staging and local distribution",
+      "Recurring supply runs between government facilities",
+    ],
+    faqs: [
+      {
+        q: "Do I need federal operating authority for local government hauling?",
+        a: "Intrastate-only carriers need state authority and a USDOT number; crossing state lines requires interstate (MC) authority. Federal solicitations typically require an active USDOT number, a satisfactory safety rating, and insurance at the solicitation's stated minimums regardless.",
+      },
+      {
+        q: "Are owner-operators competitive on 484110 set-asides?",
+        a: "Yes — the receipts-based size standard means nearly every independent carrier qualifies as small. Capacity is the usual constraint, so many owner-operators start with smaller recurring routes or sub-haul for incumbent government freight primes.",
+      },
+    ],
+  },
+  {
+    code: "423450",
+    title: "Medical, Dental, and Hospital Equipment and Supplies Merchant Wholesalers",
+    industrySlug: "medical-supplies",
+    sizeStandard: "Employee-based (wholesale trade) — verify the current count at sba.gov; the 500-employee Nonmanufacturer Rule governs most set-aside supply buys",
+    description:
+      "The distributor code for medical, dental, and hospital supplies sold to the VA, Defense Health Agency, Indian Health Service, and state health systems — exam gloves and wound care through diagnostic equipment. Wholesale codes use employee-based size standards rather than receipts.",
+    whatQualifies: [
+      "Distribution of medical consumables to government health facilities",
+      "Medical equipment supply with delivery and warranty support",
+      "Dental and laboratory supply contracts",
+      "Emergency/surge medical supply response (FEMA, state health departments)",
+    ],
+    faqs: [
+      {
+        q: "What is the Nonmanufacturer Rule and does it apply to me?",
+        a: "On set-aside supply contracts, a distributor must generally have 500 or fewer employees AND supply the product of a small US manufacturer, unless the SBA has issued a class waiver for that product. Agencies verify letters of supply — secure them before quoting.",
+      },
+      {
+        q: "Why do medical supply quotes get rejected on country of origin?",
+        a: "The Trade Agreements Act restricts most federal purchases above the threshold to US-made or designated-country products, and many common medical items are manufactured in non-designated countries. Verify TAA compliance per line item before quoting — it's the most common fatal error in this market.",
+      },
+    ],
+  },
+  {
+    code: "722320",
+    title: "Caterers",
+    industrySlug: "catering",
+    sizeStandard: "Roughly $10 million average annual receipts — verify the current figure at sba.gov",
+    description:
+      "Covers providing single-event food services — preparing and serving meals at a location designated by the customer. The code for government event catering, military exercise feeding, training-session meals, and emergency feeding missions.",
+    whatQualifies: [
+      "Event catering for agency conferences, ceremonies, and training",
+      "Field feeding for military exercises and National Guard drills",
+      "Emergency/disaster feeding under FEMA or state emergency management",
+      "Recurring meal delivery to government programs (senior services, Job Corps)",
+    ],
+    faqs: [
+      {
+        q: "How do caterers find government work?",
+        a: "Much government catering is bought below formal solicitation thresholds with purchase cards — so register in SAM.gov, then market your capability statement directly to installation contracting offices and event coordinators while watching SAM.gov and state portals for larger feeding contracts.",
+      },
+      {
+        q: "What documentation do feeding contracts require?",
+        a: "Current health permits, certified food protection managers (ServSafe or equivalent), often a written HACCP plan, and product liability insurance. Emergency feeding contracts additionally audit kitchen capacity and transport temperature control.",
+      },
+    ],
+  },
+  {
+    code: "561210",
+    title: "Facilities Support Services",
+    industrySlug: "facilities-maintenance",
+    sizeStandard: "$47 million average annual receipts",
+    description:
+      "Covers providing several support services within a client's facilities as a bundle — operations and maintenance, janitorial, grounds, security, and mail in one contract. The code for facility O&M and base operations support (BOS) contracts.",
+    whatQualifies: [
+      "Building operations & maintenance (O&M) contracts",
+      "Base operations support bundling multiple facility functions",
+      "Combined custodial + maintenance + grounds contracts",
+      "Government facility management with CMMS work-order tracking",
+    ],
+    faqs: [
+      {
+        q: "When is work solicited under 561210 instead of a single-trade code?",
+        a: "When the agency bundles multiple functions into one contract. A custodial-only contract uses 561720; custodial plus HVAC maintenance plus grounds in one PWS typically goes out under 561210. The bundle means broader licensing and staffing requirements — read the PWS scope carefully.",
+      },
+      {
+        q: "Is the high size standard good or bad for small businesses?",
+        a: "Good: at $47M in average receipts, established regional facility companies still qualify as 'small', and the government sets aside a large share of facility support work. The practical barrier is past performance breadth, which teaming or a strong subcontractor bench can solve.",
+      },
+    ],
+  },
+  {
     code: "561730",
     title: "Landscaping Services",
     industrySlug: "landscaping",

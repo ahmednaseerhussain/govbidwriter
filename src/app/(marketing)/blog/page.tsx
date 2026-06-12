@@ -1,17 +1,23 @@
 import Link from "next/link";
 import { buildMetadata, JsonLd, breadcrumbJsonLd } from "@/lib/seo/meta";
-import { BLOG_POSTS } from "@/lib/seo/blog";
+import { BLOG_POSTS, BLOG_CATEGORIES } from "@/lib/seo/blog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = buildMetadata({
   title: "Government Contracting Blog — Practical Guides for Small Business",
   description:
-    "Practical guides for small business government contractors: responding to RFPs, capability statements, compliance matrices, and winning your first contract.",
+    "Practical guides for small business government contractors: responding to RFPs, capability statements, compliance matrices, NAICS codes, past performance, and winning your first contract.",
   path: "/blog",
 });
 
 export default function BlogIndexPage() {
+  const sorted = [...BLOG_POSTS].sort((a, b) => b.date.localeCompare(a.date));
+  const usedCategories = BLOG_CATEGORIES.filter((c) =>
+    BLOG_POSTS.some((p) => p.category === c)
+  );
+
   return (
     <>
       <JsonLd
@@ -29,12 +35,22 @@ export default function BlogIndexPage() {
           work.
         </p>
 
-        <div className="mt-10 space-y-6">
-          {BLOG_POSTS.map((post) => (
+        <div className="mt-6 flex flex-wrap gap-2">
+          {usedCategories.map((category) => (
+            <Badge key={category} variant="secondary">
+              {category}
+            </Badge>
+          ))}
+        </div>
+
+        <div className="mt-8 space-y-6">
+          {sorted.map((post) => (
             <Link key={post.slug} href={`/blog/${post.slug}`} className="group block">
               <Card className="transition-shadow group-hover:shadow-md">
                 <CardHeader>
                   <p className="text-xs text-muted-foreground">
+                    <span className="font-medium text-accent">{post.category}</span>
+                    {" · "}
                     {formatDate(post.date)} · {post.readingMinutes} min read
                   </p>
                   <CardTitle className="text-xl group-hover:text-accent">

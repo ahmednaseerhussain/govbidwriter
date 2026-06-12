@@ -6,7 +6,7 @@ import { Menu, X, FileCheck2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
-  { href: "/tools/rfp-compliance-matrix-generator", label: "Free Tools" },
+  { href: "/tools", label: "Free Tools" },
   { href: "/government-contracts", label: "Industries" },
   { href: "/templates", label: "Templates" },
   { href: "/blog", label: "Blog" },

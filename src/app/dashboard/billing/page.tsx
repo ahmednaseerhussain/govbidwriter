@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { CheckCircle2 } from "lucide-react";
 import { requireUser } from "@/lib/auth/session";
 import { getUsageSummary } from "@/lib/usage";
-import { isStripeConfigured } from "@/lib/billing/stripe";
+import { isStripeConfigured, isMockBillingAllowed } from "@/lib/billing/stripe";
 import { PLANS } from "@/lib/billing/plans";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,13 +37,20 @@ export default async function BillingPage() {
         </p>
       </div>
 
-      {!isStripeConfigured() && (
-        <Alert variant="info">
-          <strong>Mock billing mode:</strong> Stripe keys are not configured.
-          Plan changes apply instantly to your local account with no charge —
-          ideal for testing the full Pro experience.
-        </Alert>
-      )}
+      {!isStripeConfigured() &&
+        (isMockBillingAllowed() ? (
+          <Alert variant="info">
+            <strong>Mock billing mode:</strong> Stripe keys are not configured.
+            Plan changes apply instantly to your local account with no charge —
+            ideal for testing the full Pro experience.
+          </Alert>
+        ) : (
+          <Alert variant="info">
+            <strong>Billing is in setup mode:</strong> paid checkout isn&apos;t
+            enabled yet. Everything you create is saved to your account, and
+            you&apos;ll be able to upgrade as soon as billing goes live.
+          </Alert>
+        ))}
 
       <Card>
         <CardHeader>

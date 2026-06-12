@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { buildMetadata, JsonLd, orgJsonLd, websiteJsonLd, faqJsonLd } from "@/lib/seo/meta";
 import { PLANS } from "@/lib/billing/plans";
+import { FREE_TOOLS } from "@/lib/seo/tools";
 
 export const metadata = buildMetadata({
   title: "Win Government Contracts Faster with AI | GovBidWriter",
@@ -135,39 +136,177 @@ export default function HomePage() {
           <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
             No account needed to see how it works.
           </p>
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {[
-              {
-                href: "/tools/rfp-compliance-matrix-generator",
-                title: "RFP Compliance Matrix Generator",
-                text: "Paste RFP text and get a requirements matrix with sections, priorities, and required documents.",
-              },
-              {
-                href: "/tools/capability-statement-generator",
-                title: "Capability Statement Generator",
-                text: "Answer a few questions about your company and get a structured, agency-ready capability statement.",
-              },
-              {
-                href: "/tools/naics-code-finder",
-                title: "NAICS Code Finder",
-                text: "Search common government contracting NAICS codes by what your business actually does.",
-              },
-            ].map((tool) => (
-              <Link key={tool.href} href={tool.href} className="group">
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {FREE_TOOLS.map((tool) => (
+              <Link key={tool.slug} href={`/tools/${tool.slug}`} className="group">
                 <Card className="h-full transition-shadow group-hover:shadow-md">
                   <CardHeader>
                     <CardTitle className="text-base group-hover:text-accent">
-                      {tool.title}
+                      {tool.name}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="text-sm text-muted-foreground">
-                    {tool.text}
+                    {tool.description}
                   </CardContent>
                 </Card>
               </Link>
             ))}
           </div>
+          <div className="mt-8 text-center">
+            <Link
+              href="/tools"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              View all free tools →
+            </Link>
+          </div>
         </div>
+      </section>
+
+      {/* Sample output */}
+      <section className="container py-20">
+        <div className="grid items-center gap-10 lg:grid-cols-2">
+          <div>
+            <h2 className="text-3xl font-bold text-primary">
+              See what comes out the other side
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              Every &quot;shall&quot; and &quot;must&quot; in the solicitation becomes a tracked
+              row: where it lives, what your response needs, which document it
+              requires, and how risky it is for your business. This is the
+              first hour of a proposal consultant&apos;s work, done in about a
+              minute.
+            </p>
+            <ul className="mt-6 space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                Compliance matrix with priority and risk per requirement
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                RFP analysis: deadline, evaluation criteria, required documents
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
+                11-section proposal draft grounded in your company profile
+              </li>
+            </ul>
+            <Link href="/tools/rfp-compliance-matrix-generator" className="mt-6 inline-block">
+              <Button>Try it with your RFP text</Button>
+            </Link>
+          </div>
+          <div className="overflow-hidden rounded-lg border shadow-sm">
+            <div className="border-b bg-muted/60 px-4 py-2 text-xs font-semibold text-muted-foreground">
+              Compliance matrix — sample output
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b bg-muted/30 text-muted-foreground">
+                    <th className="px-3 py-2 font-medium">ID</th>
+                    <th className="px-3 py-2 font-medium">Section</th>
+                    <th className="px-3 py-2 font-medium">Requirement</th>
+                    <th className="px-3 py-2 font-medium">Priority</th>
+                    <th className="px-3 py-2 font-medium">Risk</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["R-001", "L.4.2", "Submit technical volume not exceeding 15 pages", "high", "low"],
+                    ["R-002", "C.5.1", "Provide Quality Control Plan aligned to agency QASP", "high", "medium"],
+                    ["R-003", "L.4.5", "Include three past performance references from last 5 years", "high", "medium"],
+                    ["R-004", "C.3.2", "Staff on-site supervisor during all service hours", "medium", "low"],
+                    ["R-005", "M.2.1", "Address phase-in plan with zero service disruption", "high", "medium"],
+                  ].map(([id, section, req, priority, risk]) => (
+                    <tr key={id} className="border-b last:border-0">
+                      <td className="whitespace-nowrap px-3 py-2 font-mono">{id}</td>
+                      <td className="whitespace-nowrap px-3 py-2">{section}</td>
+                      <td className="px-3 py-2">{req}</td>
+                      <td className="px-3 py-2">
+                        <Badge variant={priority === "high" ? "destructive" : "secondary"}>
+                          {priority}
+                        </Badge>
+                      </td>
+                      <td className="px-3 py-2">
+                        <Badge variant={risk === "medium" ? "secondary" : "outline"}>{risk}</Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Who it's for */}
+      <section className="border-y bg-muted/40 py-20">
+        <div className="container">
+          <h2 className="text-center text-3xl font-bold text-primary">
+            Built for the contractors who win set-asides
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-muted-foreground">
+            Service businesses competing for federal, state, and local
+            contracts — each link is a full industry guide.
+          </p>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              { slug: "janitorial-services", label: "Janitorial contractors" },
+              { slug: "it-services", label: "IT service providers" },
+              { slug: "security-guard-services", label: "Security companies" },
+              { slug: "construction", label: "Construction contractors" },
+              { slug: "landscaping", label: "Landscaping firms" },
+              { slug: "facilities-maintenance", label: "Facilities & GovCon consultants" },
+            ].map((item) => (
+              <Link
+                key={item.slug}
+                href={`/government-contracts/${item.slug}`}
+                className="rounded-lg border bg-background p-4 text-sm font-medium transition-shadow hover:shadow-md hover:text-accent"
+              >
+                {item.label} →
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison */}
+      <section className="container py-20">
+        <h2 className="text-center text-3xl font-bold text-primary">
+          Manual proposal writing vs. GovBidWriter
+        </h2>
+        <div className="mx-auto mt-10 max-w-3xl overflow-hidden rounded-lg border">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-muted/40">
+                <th className="px-4 py-3 text-left font-semibold"></th>
+                <th className="px-4 py-3 text-left font-semibold text-muted-foreground">Manual</th>
+                <th className="px-4 py-3 text-left font-semibold text-primary">GovBidWriter</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ["Compliance matrix", "3–6 hours of highlighting", "Minutes, with priority and risk"],
+                ["First draft", "Days from a blank page", "11 sections from your profile"],
+                ["Missed requirements", "Found by evaluators", "Tracked row by row to done"],
+                ["Capability statement", "Fight with a Word template", "Generated, then versioned per agency"],
+                ["Cost", "Consultants from $2,000/proposal", "Free to start, $79/mo for Pro"],
+              ].map(([row, manual, gbw]) => (
+                <tr key={row} className="border-b last:border-0">
+                  <td className="px-4 py-3 font-medium">{row}</td>
+                  <td className="px-4 py-3 text-muted-foreground">{manual}</td>
+                  <td className="px-4 py-3">{gbw}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mx-auto mt-6 max-w-2xl text-center text-xs text-muted-foreground">
+          GovBidWriter produces AI-assisted drafts and checklists — not legal
+          advice. Your documents are stored in your account and never shared
+          with other users. Always verify against the official solicitation
+          before submission.
+        </p>
       </section>
 
       {/* Why */}

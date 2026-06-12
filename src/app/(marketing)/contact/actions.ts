@@ -4,12 +4,14 @@ import { headers } from "next/headers";
 import { z } from "zod";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { sendTemplateEmail } from "@/lib/email/send";
+import { track } from "@/lib/analytics";
 
 export type ContactFormState = { error?: string; sent?: boolean };
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, "Please enter your name.").max(200),
   email: z.string().trim().toLowerCase().email("Enter a valid email address."),
+  company: z.string().trim().max(200).optional(),
   topic: z.string().trim().max(200).optional(),
   message: z
     .string()
@@ -34,6 +36,7 @@ export async function submitContactAction(
   const parsed = contactSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
+    company: formData.get("company"),
     topic: formData.get("topic"),
     message: formData.get("message"),
   });
@@ -43,7 +46,7 @@ export async function submitContactAction(
   const d = parsed.data;
 
   const payload = {
-    fromName: d.name,
+    fromName: d.company ? `${d.name} (${d.company})` : d.name,
     fromEmail: d.email,
     topic: d.topic || "General inquiry",
     message: d.message,
@@ -64,5 +67,6 @@ export async function submitContactAction(
     }),
   ]);
 
+  track("contact_submitted", { topic: payload.topic });
   return { sent: true };
 }
