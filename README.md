@@ -10,7 +10,7 @@ acquisition.
 PostgreSQL (Neon) · DeepSeek (`deepseek-v4-flash`, with full mock fallback) ·
 Resend email (with full mock fallback) · Stripe (with full mock fallback).
 
----
+--- 
 
 ## Quick start
 
