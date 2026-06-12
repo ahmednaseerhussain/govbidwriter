@@ -4,7 +4,8 @@ import { constructWebhookEvent, handleStripeEvent } from "@/lib/billing/stripe";
 /**
  * Stripe webhook endpoint.
  * Configure in Stripe Dashboard: <app-url>/api/stripe/webhook with events
- * checkout.session.completed and customer.subscription.deleted.
+ * checkout.session.completed, customer.subscription.deleted, and
+ * invoice.payment_failed.
  * Inactive (returns 503) until STRIPE_WEBHOOK_SECRET is set.
  */
 export async function POST(request: Request) {

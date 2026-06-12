@@ -156,7 +156,7 @@ export async function analyzeRfpAction(
       where: { rfpDocumentId: rfp.id },
       create: { rfpDocumentId: rfp.id, ...analysisData },
       // Re-analysis resets the reminder dedupe so a changed deadline re-alerts.
-      update: { ...analysisData, reminderSentAt: null },
+      update: { ...analysisData, remindersSent: null },
     });
 
     await logUsage(user.id, "ai_generation", "rfp_analysis");

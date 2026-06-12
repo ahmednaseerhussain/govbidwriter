@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { getUserPlan, logUsage } from "@/lib/usage";
 import { requirementsToCsv } from "@/lib/export";
 import { slugify } from "@/lib/utils";
+import { sendTemplateEmail, wasEmailSentSince } from "@/lib/email/send";
 
 export async function GET(
   _request: Request,
@@ -29,6 +30,16 @@ export async function GET(
 
   const csv = requirementsToCsv(rfp.requirements);
   await logUsage(user.id, "export", "matrix_csv");
+
+  // Confirmation email at most once per day (exports are repeated often).
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  if (!(await wasEmailSentSince(user.id, "export_ready", dayAgo))) {
+    await sendTemplateEmail({
+      userId: user.id,
+      template: "export_ready",
+      payload: { exportType: "compliance matrix CSV", title: rfp.title },
+    });
+  }
 
   return new NextResponse(csv, {
     headers: {

@@ -3,12 +3,19 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CheckCircle2, FileText, ClipboardList } from "lucide-react";
 import { buildMetadata, JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/meta";
-import { INDUSTRIES, STATES, getIndustry, NAICS_DETAIL } from "@/lib/seo/data";
+import { INDUSTRIES, STATES, getIndustry, getState, NAICS_DETAIL } from "@/lib/seo/data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StateHub } from "./state-hub";
 
+// This segment serves two page types:
+//   /government-contracts/<industry-slug>  → industry guide
+//   /government-contracts/<state-slug>     → state hub (all industries in that state)
 export function generateStaticParams() {
-  return INDUSTRIES.map((i) => ({ industry: i.slug }));
+  return [
+    ...INDUSTRIES.map((i) => ({ industry: i.slug })),
+    ...STATES.map((s) => ({ industry: s.slug })),
+  ];
 }
 
 export async function generateMetadata({
@@ -17,6 +24,14 @@ export async function generateMetadata({
   params: Promise<{ industry: string }>;
 }): Promise<Metadata> {
   const { industry: slug } = await params;
+  const state = getState(slug);
+  if (state) {
+    return buildMetadata({
+      title: `Government Contracts in ${state.name} — Bidding Guide`,
+      description: `How small businesses win government contracts in ${state.name}: where bids are posted, ${state.procurementPortal.name} registration, and industry-specific guides.`,
+      path: `/government-contracts/${state.slug}`,
+    });
+  }
   const industry = getIndustry(slug);
   if (!industry) return {};
   return buildMetadata({
@@ -32,6 +47,8 @@ export default async function IndustryPage({
   params: Promise<{ industry: string }>;
 }) {
   const { industry: slug } = await params;
+  const state = getState(slug);
+  if (state) return <StateHub state={state} />;
   const industry = getIndustry(slug);
   if (!industry) notFound();
 

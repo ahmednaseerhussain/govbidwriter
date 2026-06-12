@@ -88,6 +88,32 @@ export const EMAIL_TEMPLATES: Record<string, TemplateDef> = {
     }),
   },
 
+  nurture_profile: {
+    category: "product",
+    render: () => ({
+      subject: "Complete your company profile to improve AI proposals",
+      heading: "5 minutes that improve every draft",
+      bodyHtml: `<p>Everything GovBidWriter generates — capability statements, proposal sections — is grounded in your company profile. A complete profile means specific, credible drafts; an empty one means generic placeholders.</p>
+<p>Add your NAICS codes, certifications, past performance, and differentiators once, and every future generation uses them.</p>`,
+      bodyText: `Everything GovBidWriter generates is grounded in your company profile. Complete it once and every draft improves.\n\n${APP_URL}/dashboard/company-profile`,
+      ctaLabel: "Complete your profile",
+      ctaUrl: `${APP_URL}/dashboard/company-profile`,
+    }),
+  },
+
+  nurture_upload: {
+    category: "product",
+    render: () => ({
+      subject: "Upload an RFP and get a compliance matrix in minutes",
+      heading: "Try it on a real solicitation",
+      bodyHtml: `<p>The fastest way to see what GovBidWriter does: upload an RFP you're considering (PDF or pasted text).</p>
+<p>In about a minute you'll have the deadline, evaluation criteria, submission instructions, and a draft compliance matrix — enough to make a confident bid/no-bid decision before you commit a weekend to it.</p>`,
+      bodyText: `Upload an RFP you're considering and get the deadline, evaluation criteria, and a draft compliance matrix in about a minute.\n\n${APP_URL}/dashboard/rfps/new`,
+      ctaLabel: "Upload an RFP",
+      ctaUrl: `${APP_URL}/dashboard/rfps/new`,
+    }),
+  },
+
   nurture_compliance: {
     category: "product",
     render: () => ({
@@ -233,6 +259,57 @@ ${p.deadline ? `<p><strong>Deadline found:</strong> ${esc(p.deadline)} — work 
       bodyText: `Your Pro subscription was canceled; your account is back on the Free plan. All your work remains saved.\n\nBilling: ${APP_URL}/dashboard/billing`,
       ctaLabel: "Billing",
       ctaUrl: `${APP_URL}/dashboard/billing`,
+    }),
+  },
+
+  payment_failed: {
+    category: "transactional",
+    render: () => ({
+      subject: "Payment failed — update your billing details",
+      heading: "We couldn't process your payment",
+      bodyHtml: `<p>Your latest GovBidWriter Pro payment didn't go through. This usually means an expired card or a bank decline.</p>
+<p>Please update your billing details to keep Pro access — your work is safe either way, but generation limits will drop to the Free plan if payment can't be collected.</p>`,
+      bodyText: `Your latest GovBidWriter Pro payment didn't go through. Update your billing details to keep Pro access: ${APP_URL}/dashboard/billing`,
+      ctaLabel: "Update billing",
+      ctaUrl: `${APP_URL}/dashboard/billing`,
+    }),
+  },
+
+  export_ready: {
+    category: "product",
+    render: (p) => ({
+      subject: "Your export is ready",
+      heading: "Export downloaded",
+      bodyHtml: `<p>Your ${esc(p.exportType || "document")} export${p.title ? ` of <strong>${esc(p.title)}</strong>` : ""} was generated and downloaded.</p>
+<p>Before submitting anywhere: verify every fact and requirement against the official solicitation, including amendments and Q&amp;A documents.</p>`,
+      bodyText: `Your ${p.exportType || "document"} export was generated. Verify everything against the official solicitation before submission.\n\n${APP_URL}/dashboard`,
+      ctaLabel: "Back to dashboard",
+      ctaUrl: `${APP_URL}/dashboard`,
+    }),
+  },
+
+  contact_form_admin: {
+    category: "transactional",
+    render: (p) => ({
+      subject: `New contact form message from ${p.fromName || p.fromEmail || "a visitor"}`,
+      heading: "New contact form submission",
+      bodyHtml: `<p><strong>From:</strong> ${esc(p.fromName || "—")} &lt;${esc(p.fromEmail || "—")}&gt;</p>
+<p><strong>Subject:</strong> ${esc(p.topic || "—")}</p>
+<p style="white-space:pre-wrap;border-left:3px solid #dde4ee;padding-left:12px;">${esc(p.message || "")}</p>`,
+      bodyText: `From: ${p.fromName || "—"} <${p.fromEmail || "—"}>\nSubject: ${p.topic || "—"}\n\n${p.message || ""}`,
+    }),
+  },
+
+  contact_form_confirmation: {
+    category: "transactional",
+    render: (p) => ({
+      subject: "We received your message",
+      heading: "Thanks for reaching out",
+      bodyHtml: `<p>We received your message${p.topic ? ` about <strong>${esc(p.topic)}</strong>` : ""} and will get back to you within one business day.</p>
+<p>In the meantime, the free tools and guides don't require an account — feel free to keep exploring.</p>`,
+      bodyText: `We received your message and will get back to you within one business day.\n\n${APP_URL}`,
+      ctaLabel: "Explore free tools",
+      ctaUrl: `${APP_URL}/tools/rfp-compliance-matrix-generator`,
     }),
   },
 

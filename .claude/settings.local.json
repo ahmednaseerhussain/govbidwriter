@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "PowerShell(git -C d:\\\\project\\\\govbidwriter status)",
-      "PowerShell(git -C d:\\\\project\\\\govbidwriter log --oneline -5)"
+      "PowerShell(git -C d:\\\\project\\\\govbidwriter log --oneline -5)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

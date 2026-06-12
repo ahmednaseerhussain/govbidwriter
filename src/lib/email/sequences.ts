@@ -9,9 +9,13 @@ import { sendTemplateEmail } from "./send";
  * each user's position. The cron route advances due enrollments.
  */
 
+// Delays are relative to the previous step (or enrollment for the first).
+// Day 0 is the welcome email, sent directly at signup.
 const NURTURE_STEPS: { delayHours: number; template: string }[] = [
-  { delayHours: 48, template: "nurture_compliance" }, // day 2
-  { delayHours: 72, template: "nurture_upgrade" }, // day 5 (48h + 72h)
+  { delayHours: 24, template: "nurture_profile" }, // day 1: complete profile
+  { delayHours: 48, template: "nurture_upload" }, // day 3: upload an RFP
+  { delayHours: 48, template: "nurture_compliance" }, // day 5: compliance matrix
+  { delayHours: 48, template: "nurture_upgrade" }, // day 7: upgrade/export
 ];
 
 /** Idempotently seed the nurture sequence and return its id. */

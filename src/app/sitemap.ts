@@ -30,6 +30,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
+  const stateHubPages = STATES.map((state) => ({
+    url: `${APP_URL}/government-contracts/${state.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
   const industryStatePages = INDUSTRIES.flatMap((industry) =>
     STATES.map((state) => ({
       url: `${APP_URL}/government-contracts/${industry.slug}/${state.slug}`,
@@ -56,6 +63,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     ...staticPages,
     ...industryPages,
+    ...stateHubPages,
     ...industryStatePages,
     ...naicsPages,
     ...blogPages,

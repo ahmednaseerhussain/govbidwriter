@@ -97,7 +97,7 @@ model RfpAnalysis {
   requiredDocuments      String? // JSON string array
   risks                  String? // JSON string array
   deadlineAt             DateTime? // parsed from `deadline` when parseable (drives reminders)
-  reminderSentAt         DateTime? // deadline-reminder dedupe marker
+  remindersSent          String? // JSON string array of sent reminder stages, e.g. ["7d","1d"]
   createdAt              DateTime    @default(now())
 }
 

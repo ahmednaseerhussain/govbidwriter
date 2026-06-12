@@ -121,6 +121,32 @@ export async function handleStripeEvent(event: Stripe.Event): Promise<void> {
       ]);
       break;
     }
+    case "invoice.payment_failed": {
+      const invoice = event.data.object as Stripe.Invoice;
+      const customerId =
+        typeof invoice.customer === "string" ? invoice.customer : null;
+      if (!customerId) return;
+      const sub = await db.subscription.findFirst({
+        where: { stripeCustomerId: customerId },
+      });
+      if (sub) {
+        await db.subscription.update({
+          where: { id: sub.id },
+          data: { status: "past_due" },
+        });
+        await Promise.all([
+          sendTemplateEmail({ userId: sub.userId, template: "payment_failed" }),
+          notify({
+            userId: sub.userId,
+            type: "billing",
+            title: "Payment failed",
+            body: "Update your billing details to keep Pro access.",
+            link: "/dashboard/billing",
+          }),
+        ]);
+      }
+      break;
+    }
     case "customer.subscription.deleted": {
       const sub = event.data.object as Stripe.Subscription;
       const existing = await db.subscription.findFirst({

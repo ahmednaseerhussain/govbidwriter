@@ -80,11 +80,14 @@ every feature working.
   reminders, saved-search alerts, admin signup notice.
 - **Preferences**: per-category toggles in Settings; non-transactional emails
   carry signed one-click unsubscribe links (`/api/email/unsubscribe`).
-- **Sequences**: a nurture drip (day 2 + day 5) is seeded in the DB and
-  enrolled on signup.
+- **Sequences**: a 4-step nurture drip (day 1 profile, day 3 upload RFP,
+  day 5 compliance matrix, day 7 upgrade) is seeded in the DB and enrolled on
+  signup. Deadline reminders fire at 7, 3, and 1 day(s) before an analyzed
+  RFP's deadline.
 - **Cron**: `GET /api/cron/process-emails` (Bearer `CRON_SECRET`) advances
-  sequences and sends deadline reminders for RFPs due within 3 days.
-  `vercel.json` schedules it hourly on Vercel.
+  sequences and sends deadline reminders. `vercel.json` schedules it **once
+  daily at 13:00 UTC** — the Vercel **Hobby plan allows at most one run per
+  day** (hourly expressions fail deployment); on Pro you can tighten it.
 - **In-app**: notification center at `/dashboard/notifications` with an unread
   badge in the dashboard header.
 
@@ -108,8 +111,10 @@ every feature working.
 3. Set env vars: `NEXT_PUBLIC_APP_URL`, `AUTH_SECRET`, `CRON_SECRET`, plus
    `DEEPSEEK_API_KEY`, `RESEND_API_KEY`/`EMAIL_FROM`, and Stripe keys as you
    bring each service live.
-4. `vercel.json` already schedules the email cron hourly (Vercel sends
-   `Authorization: Bearer $CRON_SECRET` automatically when the env var is set).
+4. `vercel.json` schedules the email cron once daily — the maximum the Hobby
+   plan allows (Vercel sends `Authorization: Bearer $CRON_SECRET`
+   automatically when the env var is set). Hobby timing is approximate
+   (±59 min).
 5. Stripe: create a Pro price, set `STRIPE_SECRET_KEY` + `STRIPE_PRO_PRICE_ID`,
    point a webhook at `/api/stripe/webhook` for `checkout.session.completed`
    and `customer.subscription.deleted`, set `STRIPE_WEBHOOK_SECRET`.

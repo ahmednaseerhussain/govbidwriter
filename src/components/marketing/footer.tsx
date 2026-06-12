@@ -33,6 +33,7 @@ export function MarketingFooter() {
             <li><Link className="hover:underline" href="/templates">Templates</Link></li>
             <li><Link className="hover:underline" href="/government-contract-proposal-template">Proposal Template</Link></li>
             <li><Link className="hover:underline" href="/government-contracts">Government Contracts by Industry</Link></li>
+            <li><Link className="hover:underline" href="/contact">Contact</Link></li>
           </ul>
         </div>
         <div>

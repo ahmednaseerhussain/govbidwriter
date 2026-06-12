@@ -56,14 +56,14 @@ export default function GovernmentContractsIndexPage() {
         <div className="mt-14">
           <h2 className="text-xl font-bold text-primary">Browse by state</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Each industry guide is also available with state-specific
-            procurement portals and registration details:
+            Every state hub covers where bids are posted, vendor registration,
+            and links to all ten industry guides for that state:
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             {STATES.map((state) => (
               <Link
                 key={state.slug}
-                href={`/government-contracts/${INDUSTRIES[0].slug}/${state.slug}`}
+                href={`/government-contracts/${state.slug}`}
                 className="rounded-full border px-3 py-1 text-sm hover:border-accent hover:text-accent"
               >
                 {state.name}
