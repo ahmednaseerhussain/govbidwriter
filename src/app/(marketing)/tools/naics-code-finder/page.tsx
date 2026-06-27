@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { NaicsFinder } from "./finder";
 
 export const metadata = buildMetadata({
-  title: "NAICS Code Finder for Government Contractors",
+  title: "NAICS Code Finder for Government Contracting — Free Lookup Tool",
   description:
-    "Find the right NAICS code for government contracting. Search common codes by what your business does, with size standards and set-aside guidance.",
+    "Find your NAICS code for government contracting in seconds. Search by what your business does — general contractor, IT, staffing, trucking, security — with SBA size standards and set-aside guidance.",
   path: "/tools/naics-code-finder",
 });
 
@@ -92,14 +92,25 @@ export default function NaicsFinderPage() {
           </div>
 
           <div className="rounded-lg bg-primary p-8 text-center text-primary-foreground">
-            <h2 className="text-xl font-bold">Found your code? Build your capability statement.</h2>
+            <h2 className="text-xl font-bold">Found your code? Start winning under it.</h2>
             <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/80">
-              A capability statement with the right NAICS codes is the first
-              document every contracting officer asks for.
+              A free account turns the right NAICS code into a capability
+              statement, opportunity tracking, and compliant proposal drafts —
+              all in one place.
             </p>
-            <Link href="/tools/capability-statement-generator" className="mt-4 inline-block">
-              <Button variant="accent">Generate yours free</Button>
-            </Link>
+            <div className="mt-4 flex flex-wrap justify-center gap-3">
+              <Link href="/signup?from=naics-finder">
+                <Button variant="accent">Create your free account</Button>
+              </Link>
+              <Link href="/tools/capability-statement-generator">
+                <Button
+                  variant="outline"
+                  className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"
+                >
+                  Generate capability statement free
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

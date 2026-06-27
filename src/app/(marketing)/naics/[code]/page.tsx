@@ -19,8 +19,8 @@ export async function generateMetadata({
   const naics = getNaics(code);
   if (!naics) return {};
   return buildMetadata({
-    title: `NAICS ${naics.code} — ${naics.title} | Government Contracting Guide`,
-    description: `NAICS ${naics.code} (${naics.title}) for government contractors: size standard, what qualifies, set-aside rules, and how to win contracts under this code.`,
+    title: `NAICS ${naics.code} — ${naics.title} | Size Standard & Contracts`,
+    description: `NAICS ${naics.code} (${naics.title}) for government contractors: SBA size standard, set-aside eligibility, what qualifies, and how to find and win current opportunities under this code.`,
     path: `/naics/${naics.code}`,
   });
 }
@@ -110,15 +110,21 @@ export default async function NaicsPage({
 
         <section className="my-10 rounded-lg bg-primary p-8 text-center text-primary-foreground">
           <h2 className="text-xl font-bold">
-            Bidding on a NAICS {naics.code} solicitation?
+            Win more NAICS {naics.code} contracts
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/80">
-            Generate your capability statement and compliance matrix free —
-            no account required.
+            Create a free account to track current {naics.code} opportunities,
+            build a capability statement that leads with this code, and draft
+            compliant proposals — all in one place.
           </p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
+            <Link href={`/signup?from=naics-${naics.code}`}>
+              <Button variant="accent">Start free</Button>
+            </Link>
             <Link href="/tools/capability-statement-generator">
-              <Button variant="accent">Capability Statement</Button>
+              <Button variant="outline" className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">
+                Capability Statement
+              </Button>
             </Link>
             <Link href="/tools/rfp-compliance-matrix-generator">
               <Button variant="outline" className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10">
