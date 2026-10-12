@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CapStatementTool } from "./tool";
 
 export const metadata = buildMetadata({
-  title: "Free Capability Statement Generator for Government Contractors",
+  title: "Free Capability Statement Generator for Gov Contractors",
   description:
     "Generate a government-ready capability statement in about a minute. Structured for contracting officers: core competencies, differentiators, past performance, NAICS codes.",
   path: "/tools/capability-statement-generator",

@@ -87,7 +87,7 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "what-is-a-capability-statement",
-    title: "What Is a Capability Statement? (With Government-Ready Structure)",
+    title: "What Is a Capability Statement? (Government-Ready Format)",
     description:
       "What a capability statement is, why government buyers ask for it, and the exact one-page structure contracting officers expect to see.",
     category: "Capability Statements",
@@ -273,7 +273,7 @@ export const BLOG_POSTS: BlogPost[] = [
   },
   {
     slug: "common-government-proposal-mistakes",
-    title: "10 Common Government Proposal Mistakes (And How to Avoid Them)",
+    title: "10 Common Government Proposal Mistakes and How to Avoid Them",
     description:
       "The mistakes that get small business proposals rejected or scored down — from late submission and unacknowledged amendments to ignoring Section M — with practical fixes.",
     category: "Proposal Writing",

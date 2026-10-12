@@ -2,8 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CheckCircle2, FileText, ClipboardList } from "lucide-react";
-import { buildMetadata, JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/meta";
-import { INDUSTRIES, STATES, getIndustry, getState, NAICS_DETAIL } from "@/lib/seo/data";
+import { buildMetadata, fitTitle, JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/meta";
+import {
+  INDUSTRIES,
+  STATES,
+  getIndustry,
+  getState,
+  hasNaicsDetail,
+  NAICS_DETAIL,
+} from "@/lib/seo/data";
+import { getMarketSnapshot, formatSince, formatUsd } from "@/lib/seo/usaspending";
+import { MarketSnapshotSection } from "@/components/marketing/market-snapshot";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StateHub } from "./state-hub";
@@ -27,16 +36,26 @@ export async function generateMetadata({
   const state = getState(slug);
   if (state) {
     return buildMetadata({
-      title: `Government Contracts in ${state.name} — Bidding Guide`,
+      title: fitTitle(
+        `Government Contracts in ${state.name} — Bidding Guide`,
+        `Government Contracts in ${state.name}`
+      ),
       description: `How small businesses win government contracts in ${state.name}: where bids are posted, ${state.procurementPortal.name} registration, and industry-specific guides.`,
       path: `/government-contracts/${state.slug}`,
     });
   }
   const industry = getIndustry(slug);
   if (!industry) return {};
+  const snapshot = await getMarketSnapshot(industry.naicsCodes);
   return buildMetadata({
-    title: `${industry.name} Government Contracts — How to Win Them`,
-    description: `How small businesses win ${industry.contractNoun}: requirements, documents needed, proposal checklist, NAICS ${industry.naicsCodes[0]}, and who buys.`,
+    title: fitTitle(
+      `${industry.name} Government Contracts — How to Win Them`,
+      `${industry.name} Government Contracts: How to Win`,
+      `${industry.name} Government Contracts`
+    ),
+    description: snapshot
+      ? `${snapshot.awardCount.toLocaleString("en-US")} federal ${industry.contractNoun} since ${formatSince(snapshot.since)} (${formatUsd(snapshot.totalObligated)}). Requirements, documents, checklist, and who buys.`
+      : `How small businesses win ${industry.contractNoun}: requirements, documents needed, proposal checklist, NAICS ${industry.naicsCodes[0]}, and who buys.`,
     path: `/government-contracts/${industry.slug}`,
   });
 }
@@ -52,6 +71,7 @@ export default async function IndustryPage({
   const industry = getIndustry(slug);
   if (!industry) notFound();
 
+  const snapshot = await getMarketSnapshot(industry.naicsCodes);
   const relatedNaics = NAICS_DETAIL.filter((n) =>
     industry.naicsCodes.includes(n.code)
   );
@@ -80,16 +100,30 @@ export default async function IndustryPage({
           {industry.name} Government Contracts
         </h1>
         <div className="mt-3 flex flex-wrap gap-2">
-          {industry.naicsCodes.map((code) => (
-            <Link key={code} href={`/naics/${code}`}>
-              <Badge variant="secondary" className="hover:bg-accent hover:text-accent-foreground">
+          {industry.naicsCodes.map((code) =>
+            hasNaicsDetail(code) ? (
+              <Link key={code} href={`/naics/${code}`}>
+                <Badge variant="secondary" className="hover:bg-accent hover:text-accent-foreground">
+                  NAICS {code}
+                </Badge>
+              </Link>
+            ) : (
+              <Badge key={code} variant="secondary">
                 NAICS {code}
               </Badge>
-            </Link>
-          ))}
+            )
+          )}
         </div>
 
         <p className="mt-6 leading-relaxed text-muted-foreground">{industry.intro}</p>
+
+        {snapshot && (
+          <MarketSnapshotSection
+            snapshot={snapshot}
+            heading={`Federal ${industry.name.toLowerCase()} spending`}
+            scope={`federal ${industry.contractNoun} nationwide`}
+          />
+        )}
 
         <section className="mt-10">
           <h2 className="flex items-center gap-2 text-2xl font-bold text-primary">

@@ -17,7 +17,7 @@ import { PLANS } from "@/lib/billing/plans";
 import { FREE_TOOLS } from "@/lib/seo/tools";
 
 export const metadata = buildMetadata({
-  title: "Win Government Contracts Faster with AI | GovBidWriter",
+  title: "GovBidWriter: Win Government Contracts Faster with AI",
   description:
     "Upload any RFP and instantly generate a compliance matrix, proposal outline, and first draft tailored to your business. Built for US small business contractors.",
   path: "/",

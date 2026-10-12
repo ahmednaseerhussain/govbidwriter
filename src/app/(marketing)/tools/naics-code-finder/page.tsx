@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { NaicsFinder } from "./finder";
 
 export const metadata = buildMetadata({
-  title: "NAICS Code Finder for Government Contracting — Free Lookup Tool",
+  title: "NAICS Code Finder for Government Contracting (Free)",
   description:
     "Find your NAICS code for government contracting in seconds. Search by what your business does — general contractor, IT, staffing, trucking, security — with SBA size standards and set-aside guidance.",
   path: "/tools/naics-code-finder",

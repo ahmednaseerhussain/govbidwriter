@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = buildMetadata({
-  title: "Government Contracting Blog — Practical Guides for Small Business",
+  title: "Government Contracting Blog: Guides for Small Business",
   description:
     "Practical guides for small business government contractors: responding to RFPs, capability statements, compliance matrices, NAICS codes, past performance, and winning your first contract.",
   path: "/blog",

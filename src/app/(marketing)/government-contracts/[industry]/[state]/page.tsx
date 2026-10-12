@@ -2,8 +2,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CheckCircle2, ExternalLink, MapPin } from "lucide-react";
-import { buildMetadata, JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/meta";
-import { INDUSTRIES, STATES, getIndustry, getState } from "@/lib/seo/data";
+import { buildMetadata, fitTitle, JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/meta";
+import {
+  INDUSTRIES,
+  STATES,
+  getIndustry,
+  getState,
+  hasNaicsDetail,
+  isIndexedIndustryState,
+} from "@/lib/seo/data";
+import { getMarketSnapshot, formatSince, formatUsd } from "@/lib/seo/usaspending";
+import { MarketSnapshotSection } from "@/components/marketing/market-snapshot";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -22,10 +31,20 @@ export async function generateMetadata({
   const industry = getIndustry(iSlug);
   const state = getState(sSlug);
   if (!industry || !state) return {};
+  const snapshot = await getMarketSnapshot(industry.naicsCodes, state.abbr);
+  const count = snapshot?.awardCount.toLocaleString("en-US");
   return buildMetadata({
-    title: `${industry.name} Government Contracts in ${state.name}`,
-    description: `Win ${industry.contractNoun} in ${state.name}: where bids are posted, state registration via ${state.procurementPortal.name}, requirements, and a proposal checklist.`,
+    title: fitTitle(
+      count && `${industry.name} Contracts in ${state.name}: ${count} Federal Awards`,
+      count && `${industry.name} Contracts in ${state.name} (${count} Awards)`,
+      `${industry.name} Government Contracts in ${state.name}`,
+      `${industry.name} Contracts in ${state.name}`
+    ),
+    description: snapshot
+      ? `${count} federal ${industry.contractNoun} performed in ${state.name} since ${formatSince(snapshot.since)} (${formatUsd(snapshot.totalObligated)}). See top agencies, recent winners, and how to bid.`
+      : `Win ${industry.contractNoun} in ${state.name}: where bids are posted, state registration via ${state.procurementPortal.name}, and requirements.`,
     path: `/government-contracts/${industry.slug}/${state.slug}`,
+    index: isIndexedIndustryState(industry.slug, state.slug),
   });
 }
 
@@ -39,7 +58,18 @@ export default async function IndustryStatePage({
   const state = getState(sSlug);
   if (!industry || !state) notFound();
 
+  const snapshot = await getMarketSnapshot(industry.naicsCodes, state.abbr);
+  const industryLower = industry.name.toLowerCase();
+
   const stateFaqs = [
+    ...(snapshot
+      ? [
+          {
+            q: `How much does the federal government spend on ${industryLower} in ${state.name}?`,
+            a: `Since ${formatSince(snapshot.since)}, agencies obligated ${formatUsd(snapshot.totalObligated)} across ${snapshot.awardCount.toLocaleString("en-US")} ${industry.contractNoun} performed in ${state.name} (NAICS ${industry.naicsCodes.join(", ")}), an average of ${formatUsd(snapshot.avgPerAward)} per award.${snapshot.topAgencies[0] ? ` The ${snapshot.topAgencies[0].name} is the largest buyer.` : ""}`,
+          },
+        ]
+      : []),
     {
       q: `Where are ${industry.name.toLowerCase()} bids posted in ${state.name}?`,
       a: `Federal opportunities performed in ${state.name} are posted on SAM.gov (filter by place of performance). State-level work is posted on ${state.procurementPortal.name}, and counties, cities, and school districts run their own portals — register with the largest ones in your service area.`,
@@ -80,13 +110,19 @@ export default async function IndustryStatePage({
           {industry.name} Government Contracts in {state.name}
         </h1>
         <div className="mt-3 flex flex-wrap gap-2">
-          {industry.naicsCodes.map((code) => (
-            <Link key={code} href={`/naics/${code}`}>
-              <Badge variant="secondary" className="hover:bg-accent hover:text-accent-foreground">
+          {industry.naicsCodes.map((code) =>
+            hasNaicsDetail(code) ? (
+              <Link key={code} href={`/naics/${code}`}>
+                <Badge variant="secondary" className="hover:bg-accent hover:text-accent-foreground">
+                  NAICS {code}
+                </Badge>
+              </Link>
+            ) : (
+              <Badge key={code} variant="secondary">
                 NAICS {code}
               </Badge>
-            </Link>
-          ))}
+            )
+          )}
           <Badge variant="outline">
             <MapPin className="mr-1 h-3 w-3" /> {state.abbr}
           </Badge>
@@ -110,6 +146,14 @@ export default async function IndustryStatePage({
           </a>
         </section>
 
+        {snapshot && (
+          <MarketSnapshotSection
+            snapshot={snapshot}
+            heading={`${industry.name} contract awards in ${state.name}`}
+            scope={`federal ${industry.contractNoun} performed in ${state.name}`}
+          />
+        )}
+
         <section className="mt-10">
           <h2 className="text-2xl font-bold text-primary">
             Requirements to expect
@@ -124,26 +168,16 @@ export default async function IndustryStatePage({
           </ul>
         </section>
 
-        <section className="mt-10">
-          <h2 className="text-2xl font-bold text-primary">Documents to prepare</h2>
-          <ul className="mt-4 space-y-2">
-            {industry.documentsNeeded.map((doc) => (
-              <li key={doc} className="flex items-start gap-2 text-sm">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-accent" />
-                {doc}
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="mt-10">
-          <h2 className="text-2xl font-bold text-primary">Proposal checklist</h2>
-          <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm">
-            {industry.proposalChecklist.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ol>
-        </section>
+        <p className="mt-6 text-sm text-muted-foreground">
+          The full documents list and proposal checklist are in the{" "}
+          <Link
+            href={`/government-contracts/${industry.slug}`}
+            className="font-medium text-primary hover:underline"
+          >
+            {industry.name} government contracts guide
+          </Link>
+          .
+        </p>
 
         <section className="my-10 rounded-lg bg-primary p-8 text-center text-primary-foreground">
           <h2 className="text-xl font-bold">

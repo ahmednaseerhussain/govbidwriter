@@ -2,7 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { CheckCircle2, Ruler } from "lucide-react";
-import { buildMetadata, JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/meta";
+import { buildMetadata, fitTitle, JsonLd, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo/meta";
+import { getMarketSnapshot, formatSince, formatUsd } from "@/lib/seo/usaspending";
+import { MarketSnapshotSection } from "@/components/marketing/market-snapshot";
 import { NAICS_DETAIL, getNaics, getIndustry, STATES } from "@/lib/seo/data";
 import { Button } from "@/components/ui/button";
 
@@ -18,9 +20,16 @@ export async function generateMetadata({
   const { code } = await params;
   const naics = getNaics(code);
   if (!naics) return {};
+  const snapshot = await getMarketSnapshot([naics.code]);
   return buildMetadata({
-    title: `NAICS ${naics.code} — ${naics.title} | Size Standard & Contracts`,
-    description: `NAICS ${naics.code} (${naics.title}) for government contractors: SBA size standard, set-aside eligibility, what qualifies, and how to find and win current opportunities under this code.`,
+    title: fitTitle(
+      `NAICS ${naics.code} Contracts: ${naics.title}`,
+      `NAICS ${naics.code}: ${naics.title}`,
+      `NAICS ${naics.code} Federal Contracts & Size Standard`
+    ),
+    description: snapshot
+      ? `NAICS ${naics.code}: ${snapshot.awardCount.toLocaleString("en-US")} federal contract awards since ${formatSince(snapshot.since)} (${formatUsd(snapshot.totalObligated)}). Size standard ${naics.sizeStandard}, top agencies, recent winners.`
+      : `NAICS ${naics.code} (${naics.title}) for government contractors: SBA size standard, set-aside eligibility, what qualifies, and how to win contracts.`,
     path: `/naics/${naics.code}`,
   });
 }
@@ -35,6 +44,7 @@ export default async function NaicsPage({
   if (!naics) notFound();
 
   const industry = naics.industrySlug ? getIndustry(naics.industrySlug) : undefined;
+  const snapshot = await getMarketSnapshot([naics.code]);
 
   return (
     <>
@@ -68,6 +78,14 @@ export default async function NaicsPage({
         </div>
 
         <p className="mt-6 leading-relaxed text-muted-foreground">{naics.description}</p>
+
+        {snapshot && (
+          <MarketSnapshotSection
+            snapshot={snapshot}
+            heading={`Federal contracts awarded under NAICS ${naics.code}`}
+            scope={`contract awards under NAICS ${naics.code}`}
+          />
+        )}
 
         <section className="mt-10">
           <h2 className="text-2xl font-bold text-primary">

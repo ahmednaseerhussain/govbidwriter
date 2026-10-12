@@ -1,27 +1,56 @@
 import type { Metadata } from "next";
 import { APP_URL } from "@/lib/utils";
 
+const BRAND_SUFFIX = " | GovBidWriter";
+const MAX_TITLE = 60;
+const MAX_DESCRIPTION = 160;
+// Site-wide image from src/app/opengraph-image.tsx. Must be set explicitly:
+// a page-level `openGraph` object replaces the inherited one, image included.
+const OG_IMAGE = { url: "/opengraph-image", width: 1200, height: 630, alt: "GovBidWriter" };
+
+/** Trim to `max` chars on a word boundary. */
+export function clampText(text: string, max: number): string {
+  if (text.length <= max) return text;
+  return `${text.slice(0, max - 1).replace(/[\s,;:—-]+\S*$/, "")}…`;
+}
+
+/** First candidate title that fits in the ~60 chars Google displays. */
+export function fitTitle(...candidates: (string | false | null | undefined)[]): string {
+  const valid = candidates.filter((c): c is string => Boolean(c));
+  return valid.find((c) => c.length <= MAX_TITLE) ?? clampText(valid[valid.length - 1], MAX_TITLE);
+}
+
 export function buildMetadata(args: {
   title: string;
   description: string;
   path: string;
+  /** false → noindex,follow and should be left out of the sitemap. */
+  index?: boolean;
 }): Metadata {
   const url = `${APP_URL}${args.path}`;
+  const description = clampText(args.description, MAX_DESCRIPTION);
+  // Only append the brand when it fits in the ~60 chars Google displays.
+  const fitsBrand =
+    !args.title.includes("GovBidWriter") && args.title.length + BRAND_SUFFIX.length <= MAX_TITLE;
+  const title = fitsBrand ? args.title : { absolute: args.title };
   return {
-    title: args.title,
-    description: args.description,
+    title,
+    description,
     alternates: { canonical: url },
+    ...(args.index === false && { robots: { index: false, follow: true } }),
     openGraph: {
       title: args.title,
-      description: args.description,
+      description,
       url,
       siteName: "GovBidWriter",
       type: "website",
+      images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
       title: args.title,
-      description: args.description,
+      description,
+      images: [OG_IMAGE.url],
     },
   };
 }

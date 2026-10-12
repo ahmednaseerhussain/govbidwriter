@@ -837,3 +837,34 @@ export function getNaics(code: string): NaicsEntry | undefined {
 export function industriesForNaics(code: string): Industry[] {
   return INDUSTRIES.filter((i) => i.naicsCodes.includes(code));
 }
+
+export function hasNaicsDetail(code: string): boolean {
+  return NAICS_DETAIL.some((n) => n.code === code);
+}
+
+// ---- indexing ----
+
+/**
+ * Industry x state pages Google should index. Only pages that have earned
+ * Search Console impressions — the other ~90 near-duplicates are noindexed
+ * and left out of the sitemap so crawl budget goes to pages that can rank.
+ * Promote a page here once it shows impressions (format: "industry/state").
+ */
+export const INDEXED_INDUSTRY_STATES = new Set([
+  "landscaping/virginia",
+  "landscaping/arizona",
+  "security-guard-services/california",
+  "security-guard-services/pennsylvania",
+  "software-development/georgia",
+  "software-development/illinois",
+  "software-development/north-carolina",
+  "software-development/arizona",
+  "facilities-maintenance/california",
+  "facilities-maintenance/illinois",
+  "trucking/pennsylvania",
+  "janitorial-services/georgia",
+]);
+
+export function isIndexedIndustryState(industrySlug: string, stateSlug: string): boolean {
+  return INDEXED_INDUSTRY_STATES.has(`${industrySlug}/${stateSlug}`);
+}
